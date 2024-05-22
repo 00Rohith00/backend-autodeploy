@@ -490,14 +490,40 @@ const doctorDetailsApi = (request, response, next) => {
 }
 const editDoctorDetailsApi = (request, response, next) => { next() }
 
+// appointment module:
 
-export default {
-    createNewClientApi, createNewUserApi,
-    scanType, department, createNewHealthCenterApi,
-    createNewRobotApi, isExistingUserApi,
-    setPasswordApi, loginApi, verifyOptApi,
-    patientDetailsApi, createNewPatientsApi,
-    editPatientDetailsApi, doctorDetailsApi,
-    editDoctorDetailsApi
+const searchPatientInformationApi = (request, response, next) => { next() }
+ 
+const listOfHospitalRobotsApi = (request, response, next) => { 
+
+    const listOfRobotSchema = joi.object({ branch_id: joi.number().required() })
+
+    const { error } = listOfRobotSchema.validate({ branch_id: request.body.branch_id})
+
+    if (error) {
+        failResponse(response, {
+            status: false,
+            message: error.details[0].message.includes('is required') ?
+                error.details[0].message : `invalid input in ${error.details[0].message.split(" ")[0]}`
+        })
+    }
+    else { next() }
 }
 
+
+const createNewAppointmentApi = (request, response, next) => { next() }
+const appointmentDetailsApi = (request, response, next) => { next() }
+const cancelAppointmentApi = (request, response, next) => { next() }
+const editAppointmentApi = (request, response, next) => { next() }
+const listOfHospitalAppointmentsApi = (request, response, next) => { next() }
+
+
+
+export default {
+    createNewClientApi, createNewUserApi, scanType, department,
+    createNewHealthCenterApi, createNewRobotApi, isExistingUserApi,
+    setPasswordApi, loginApi, verifyOptApi, patientDetailsApi, createNewPatientsApi,
+    editPatientDetailsApi, doctorDetailsApi, editDoctorDetailsApi, searchPatientInformationApi,
+    listOfHospitalRobotsApi, createNewAppointmentApi, appointmentDetailsApi, cancelAppointmentApi, editAppointmentApi,
+    listOfHospitalAppointmentsApi
+}

@@ -50,96 +50,28 @@ const searchPatientInformationApi = async (data) => {
     }
 }
 
-/**
- * Admin retrieves a list of robots associated with a hospital branch. This function takes in a data object containing 
- * the user ID, branch ID, and role name. It then retrieves the list of robots associated with the specified branch.
- * If successful, it returns a Promise that resolves to an object containing the list of robots.
- * If any error occurs during the process, it throws an Error with details of the specific error encountered.
- *
- * @param {Object} data - The data object containing the user ID, branch ID, and role name.
- * @param {string} data.body.user_id - The ID of the user making the request.
- * @param {string} data.body.branch_id - The ID of the branch associated with the robots.
- * @param {string} data.body.role_name - The role name of the user making the request.
- * @return {Promise<Object>} A promise that resolves to an object containing the list of robots.
- * 
- * @throws {Error} If the user ID is not found, the branch ID is not found, or the user does not have the required role.
- * @throws {Error} If an error occurs while retrieving the user or branch details.
- * @throws {Error} If an error occurs while retrieving the list of robots.
- * @throws {Error} If an error occurs while constructing the return statement.
- * @throws {Error} If an error occurs while handling the error.
- */
-const listOfHospitalRobotsApi = async (data) => {
-
-    try {
-
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
-
-        // retrieving branch's detail using branch_id in health center collection
-        const branchDetails = await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: userDetails.client_id })
-
-        if (branchDetails != null &&
-            userDetails != null &&
-            (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
-
-            // retrieving all the robot's id using branch_id
-            const listOfRobots = await collections.RobotModel
-                .find({ branch_id: data.body.branch_id },
-                    { robot_id: 1, robot_registration_id: 1, _id: 0 })
-
-            return returnStatement(true, "list of robots", listOfRobots)
-        }
-        else {
-            throw returnStatement(false,
-                userDetails == null ? "used id is not found" :
-                    branchDetails == null ? "branch id is not found" :
-                        `${data.body.role_name} user can't able to access this api`)
-        }
-    }
-    catch (error) {
-        if (error.status == false && error.message != null) {
-            // if branch id is not found then this if statement will execute
-            throw error.message
-        }
-        else {
-            // if any error occurs while inserting or retrieving a data we can find that using error._message [in build property]
-            // if we got some other error just returning a internal server error to the front end.
-            throw error._message ? error._message : "internal server error"
-        }
-    }
-}
 
 /**
- * Admin retrieves a list of health centers associated with a client. This function takes in data containing the user ID, client ID, 
- * and role name. It then verifies the user's permissions and retrieves the list of health centers associated with the client.
- * The function returns a Promise that resolves to an object containing the list of health centers.
+ * Admin retrieves a list of scan types based on user ID and role. This function takes in the user ID and role name as parameters 
+ * and fetches a list of scan types associated with the user's role.It returns a Promise that resolves to an object containing
+ * the list of scan types.
  *
- * @param {Object} data - The data object containing the user ID, client ID, and role name.
- * @param {string} data.body.user_id - The ID of the user making the request.
- * @param {string} data.body.client_id - The ID of the client.
- * @param {string} data.body.role_name - The role name of the user making the request.
- * @return {Promise<Object>} A promise that resolves to an object containing the list of health centers.
- * 
- * @throws {Error} If the user ID is not found or the user does not have the required role, an error is thrown.
- * @throws {Error} If an error occurs while retrieving the user or health center details, an error is thrown.
- * @throws {Error} If an error occurs while constructing the return statement, an error is thrown.
- * @throws {Error} If an error occurs while handling the error, an error is thrown.
+ * @param {string} data.body.user_id - The ID of the user.
+ * @param {string} data.body.role_name - The role name of the user.
+ * @return {Promise<Object>} A promise that resolves to an object containing the list of scan types.
  */
-const listOfHealthCenterApi = async (data) => {
+const listOfScanTypesApi = async (data) => {
 
     try {
-
-        // retrieving the user's details [admin or system_admin] using user_id to find client_id
+        // retrieving the user's details [admin or system_admin] using user_id 
         const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
 
         if (userDetails != null && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
-            // getting the list of health center using client_id
-            const listOfHealthCenter = await collection.HealthCenterModel
-                .find({ client_id: data.body.client_id },
-                    { branch_id: 1, branch_name: 1, _id: 0 })
+            const listOfScanTypes = await collections.HospitalClientModel
+                .findOne({ client_id: userDetails.client_id }, { scan_type: 1, _id: 0 })
 
-            return returnStatement(true, "list of health centers", listOfHealthCenter)
-
+            return returnStatement(true, "list of scan types", listOfScanTypes['scan_type'])
         }
         else {
             throw returnStatement(false,
@@ -148,17 +80,11 @@ const listOfHealthCenterApi = async (data) => {
         }
     }
     catch (error) {
-        if (error.status == false && error.message != null) {
-            // if user id is not found then this if statement will execute
-            throw error.message
-        }
-        else {
-            // if any error occurs while inserting or retrieving a data we can find that using error._message [in build property]
-            // if we got some other error just returning a internal server error to the front end.
-            throw error._message ? error._message : "internal server error"
-        }
+        if (error.status == false && error.message != null) { throw error.message }
+        else { throw error._message ? error._message : "internal server error" }
     }
 }
+
 
 /**
  * Admin retrieves a list of hospital doctors based on the provided user data. This function takes in user data containing 
@@ -191,7 +117,7 @@ const listOfHospitalDoctorsApi = async (data) => {
 
             const listOfAllUser = await collections.UserModel
                 .find({
-                    client_id: data.body.client_id,
+                    client_id: userDetails.client_id,
                     created_by: { $ne: null },                // $ne --> not equal to
                     branch_id: null
                 }, {
@@ -232,31 +158,95 @@ const listOfHospitalDoctorsApi = async (data) => {
 
 
 /**
- * Admin retrieves a list of scan types based on user ID and role. This function takes in the user ID and role name as parameters 
- * and fetches a list of scan types associated with the user's role.It returns a Promise that resolves to an object containing
- * the list of scan types.
+ * Admin retrieves a list of health centers associated with a client. This function takes in data containing the user ID, client ID, 
+ * and role name. It then verifies the user's permissions and retrieves the list of health centers associated with the client.
+ * The function returns a Promise that resolves to an object containing the list of health centers.
  *
- * @param {string} data.body.user_id - The ID of the user.
- * @param {string} data.body.role_name - The role name of the user.
- * @return {Promise<Object>} A promise that resolves to an object containing the list of scan types.
+ * @param {Object} data - The data object containing the user ID, client ID, and role name.
+ * @param {string} data.body.user_id - The ID of the user making the request.
+ * @param {string} data.body.client_id - The ID of the client.
+ * @param {string} data.body.role_name - The role name of the user making the request.
+ * @return {Promise<Object>} A promise that resolves to an object containing the list of health centers.
+ * 
+ * @throws {Error} If the user ID is not found or the user does not have the required role, an error is thrown.
+ * @throws {Error} If an error occurs while retrieving the user or health center details, an error is thrown.
+ * @throws {Error} If an error occurs while constructing the return statement, an error is thrown.
+ * @throws {Error} If an error occurs while handling the error, an error is thrown.
  */
-const listOfScanTypesApi = async (data) => {
+const listOfHealthCenterApi = async (data) => {
 
     try {
-        // retrieving the user's details [admin or system_admin] using user_id 
+
+        // retrieving the user's details [admin or system_admin] using user_id to find client_id
         const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
 
         if (userDetails != null && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
-            const listOfScanTypes = await collections.HospitalClientModel
-                .findOne({ client_id: userDetails.client_id }, { scan_type: 1, _id: 0 })
+            // getting the list of health center using client_id
+            const listOfHealthCenter = await collections.HealthCenterModel
+                .find({ client_id: userDetails.client_id },
+                    { branch_id: 1, branch_name: 1, _id: 0 })
 
-            return returnStatement(true, "list of scan types", listOfScanTypes['scan_type'])
+            return returnStatement(true, "list of health centers", listOfHealthCenter)
+
         }
         else {
             throw returnStatement(false,
                 userDetails == null ? "used id is not found" :
                     `${data.body.role_name} user can't able to access this api`)
+        }
+    }
+    catch (error) {
+        if (error.status == false && error.message != null) { throw error.message }
+        else { throw error._message ? error._message : "internal server error" }
+    }
+}
+
+
+
+/**
+ * Admin retrieves a list of robots associated with a hospital branch. This function takes in a data object containing 
+ * the user ID, branch ID, and role name. It then retrieves the list of robots associated with the specified branch.
+ * If successful, it returns a Promise that resolves to an object containing the list of robots.
+ * If any error occurs during the process, it throws an Error with details of the specific error encountered.
+ *
+ * @param {Object} data - The data object containing the user ID, branch ID, and role name.
+ * @param {string} data.body.user_id - The ID of the user making the request.
+ * @param {string} data.body.branch_id - The ID of the branch associated with the robots.
+ * @param {string} data.body.role_name - The role name of the user making the request.
+ * @return {Promise<Object>} A promise that resolves to an object containing the list of robots.
+ * 
+ * @throws {Error} If the user ID is not found, the branch ID is not found, or the user does not have the required role.
+ * @throws {Error} If an error occurs while retrieving the user or branch details.
+ * @throws {Error} If an error occurs while retrieving the list of robots.
+ * @throws {Error} If an error occurs while constructing the return statement.
+ * @throws {Error} If an error occurs while handling the error.
+ */
+const listOfHospitalRobotsApi = async (data) => {
+
+    try {
+
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
+
+        const branchDetails = await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: userDetails.client_id })
+
+
+        if (branchDetails != null &&
+            userDetails != null &&
+            (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
+
+            // retrieving all the robot's id using branch_id
+            const listOfRobots = await collections.RobotModel
+                .find({ branch_id: data.body.branch_id },
+                    { robot_id: 1, robot_registration_id: 1, _id: 0 })
+
+            return returnStatement(true, "list of robots", listOfRobots)
+        }
+        else {
+            throw returnStatement(false,
+                userDetails == null ? "used id is not found" :
+                    branchDetails == null ? "branch id is not found" :
+                        `${data.body.role_name} user can't able to access this api`)
         }
     }
     catch (error) {
@@ -318,11 +308,11 @@ const createNewAppointmentApi = async (data) => {
                 client_id: userDetails.client_id,
                 patient_mobile_number: data.body.patient_mobile_number,
                 patient_name: data.body.patient_name,
-                patient_email_id: data.body.patient_email_id ? data.body.patient_email_id : null,
+                patient_email_id: data.body.patient_email_id,
                 patient_gender: data.body.patient_gender,
                 patient_age: data.body.patient_age,
                 patient_pin_code: data.body.patient_pin_code,
-                electronic_id: data.body.electronic_id ? data.body.electronic_id : null,
+                electronic_id: data.body.electronic_id,
                 action_required: false,
                 created_by: data.body.user_id,
             }
@@ -342,24 +332,34 @@ const createNewAppointmentApi = async (data) => {
                 if (createPatient) patientId = createPatient.patient_id
                 else throw error
             }
-
-            const doctorDetails = await collections.UserModel
-                .findOne({ user_id: data.body.doctor_id }, { user_details: 1, _id: 0 })
-                .populate({
-                    path: 'user_details',
-                    select: '-_id user_name',
-                })
-
-            if (doctorDetails == null) throw error
-
+            
+            const patient = await collections.PatientModel.findOne({ patient_id: data.body.patient_id ? data.body.patient_id : patientId,  client_id: userDetails.client_id})
+            const doctor = await collections.UserModel.findOne({ user_id: data.body.doctor.id, client_id: userDetails.client_id }, { _id: 0 })
+                    .populate({
+                        path: 'user_details',
+                        select: 'user_name doctor',
+                    })
+            const robot = await collections.RobotModel.findOne({ robot_id: data.body.robot_id, branch_id: data.body.branch_id })
+            
+                
+            if (patient != null && doctor != null && robot != null) {
+                  
+                if (doctor.user_details.doctor == null) {  throw returnStatement(false, "doctor id not found") }
+            }
+            else {
+                throw returnStatement(false,
+                    patient == null ? "patient id not found" :
+                        robot == null ? "robot id or branch or is not found" : "doctor id not found" )            
+                }
+            
             const conferenceInfo = {
-                owner: doctorDetails.user_details.user_name,
+                owner: doctor.user_details.user_name,
                 appointment_date: data.body.date,
-                appointment_time: data.body.time
+                appointment_time: data.body.time ? data.body.time : "00:00:00"
             }
 
             const appointmentDetails = {
-                client_id: data.body.client_id,
+                client_id: client_id,
                 op_id: data.body.op_id ? data.body.op_id : null,
                 billing_id: data.body.billing_id ? data.body.billing_id : null,
                 usg_ref_id: data.body.usg_ref_id ? data.body.usg_ref_id : null,
@@ -576,47 +576,6 @@ const appointmentDetailsApi = async (data) => {
 
 
 /**
- * Admin reschedules an appointment based on the provided data. This function takes in a data object containing the
- * user ID, appointment ID, new date, and optionally new time. It then attempts to reschedule the appointment to the new date 
- * and time. 
- * 
- * @param {Object} data - An object containing the necessary data for rescheduling the appointment.
- * @param {string} data.body.user_id - The unique identifier of the user who owns the appointment.
- * @param {string} data.body.appointment_id - The unique identifier of the appointment to be rescheduled.
- * @param {string} data.body.date - The new date for the appointment.
- * @param {string} [data.body.time] - Optional. The new time for the appointment.
- * 
- * @return {Promise<Object>} A Promise that resolves to an object containing the status and message of the rescheduled appointment.
- * @throws {Object} Throws an object with status and message properties if the user details are not found or if the appointment ID is not found.
- * @throws {string} Throws a string with the error message if an internal server error occurs during the rescheduling process.
- */
-
-const rescheduleAppointmentApi = async (data) => {
-
-    try {
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
-
-        if (userDetails != null) {
-            const appointmentDetails = await collections.AppointmentModel
-                .findOneAndUpdate({ appointment_id: data.body.appointment_id },
-                    { $set: { date: data.body.new_date, time: data.body.new_time } },
-                    { new: true })
-            if (appointmentDetails != null) {
-                return returnStatement(true, "appointment is reschedule")
-            }
-            else { throw returnStatement(false, "appointment id not found") }
-        }
-        else { throw returnStatement(false, "user id not found") }
-
-    }
-    catch (error) {
-        if (error.status == false && error.message != null) { throw error.message }
-        else { throw error._message ? error._message : "internal server error" }
-    }
-}
-
-
-/**
  * Admin edits an appointment based on the provided data. This function takes in a data object containing the user ID, 
  * appointment ID, and fields to update. It asynchronously updates the appointment with the specified changes and returns a 
  * Promise that resolves to an object containing the status and message of the edited appointment.
@@ -651,10 +610,7 @@ const editAppointmentApi = async (data) => {
 
 
 export default {
-    searchPatientInformationApi, listOfHospitalRobotsApi,
-    listOfHealthCenterApi, listOfHospitalDoctorsApi,
-    listOfScanTypesApi, createNewAppointmentApi,
-    cancelAppointmentApi, listOfHospitalAppointmentsApi,
-    appointmentDetailsApi, rescheduleAppointmentApi,
-    editAppointmentApi,
+    searchPatientInformationApi, listOfScanTypesApi, listOfHospitalDoctorsApi,
+    listOfHealthCenterApi, listOfHospitalRobotsApi, createNewAppointmentApi,
+    appointmentDetailsApi, cancelAppointmentApi, editAppointmentApi, listOfHospitalAppointmentsApi
 }
