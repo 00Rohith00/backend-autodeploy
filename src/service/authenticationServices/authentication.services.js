@@ -39,6 +39,7 @@ const isExistingUserApi = async (data) => {
 
       return returnStatement(true, "existing email id",
         {
+          test: "testing",
           isExist: true,
           isNew: loginObjectId.user_login.update_count ? false : true
         })
