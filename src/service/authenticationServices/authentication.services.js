@@ -241,7 +241,7 @@ const sendOtpApi = async (data) => {
       }
       await sendEmail(data.body.user_email_id, "email notification testing", "atre health tech", "srohith10012002@gmail.com", `hello guys current i am doing email notification service using mail chimp ${otp}`)
 
-      return returnStatement(true, "OTP sent successfully")
+      return returnStatement(true, "OTP sent successfully 12345")
     }
     else { throw returnStatement(false, "email id is not found") }
   }
