@@ -544,7 +544,6 @@ const createNewAppointmentApi = (request, response, next) => {
         time: joi.string().pattern(/^([01]\d|2[0-3]):([0-5]\d)$/).required().label('Appointment-Time'),
         op_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional(),
         billing_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional(),
-        usg_ref_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional(),
         branch_id: joi.number().required(),
         robot_id: joi.number().required(),
         doctor_id: joi.number().required(),
@@ -555,6 +554,7 @@ const createNewAppointmentApi = (request, response, next) => {
         patient_age: joi.number().min(1).max(110).required(),
         patient_pin_code: joi.number().required(),
         patient_gender: joi.string().regex(/^[a-zA-Z]+$/).required(),
+        patient_address: joi.string().pattern(/^[a-zA-Z0-9\/\-]+(?: [a-zA-Z0-9\/\-]+)*$/).min(8).max(36).required(),
         differential_diagnosis: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
         electronic_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(16).optional()
 
@@ -573,7 +573,7 @@ const createNewAppointmentApi = (request, response, next) => {
         time: request.body.time,
         op_id: request.body.op_id,
         billing_id: request.body.billing_id,
-        usg_ref_id: request.body.usg_ref_id,
+        patient_address: request.body.patient_address,
         branch_id: request.body.branch_id,
         robot_id: request.body.robot_id,
         doctor_id: request.body.doctor_id,

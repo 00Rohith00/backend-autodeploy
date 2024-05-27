@@ -331,6 +331,7 @@ const createNewAppointmentApi = async (data) => {
                         patient_email_id: data.body.patient_email_id,
                         patient_gender: data.body.patient_gender,
                         patient_age: data.body.patient_age,
+                        patient_address: data.body.patient_address,
                         patient_pin_code: data.body.patient_pin_code,
                         electronic_id: data.body.electronic_id,
                         action_required: false,
@@ -351,7 +352,10 @@ const createNewAppointmentApi = async (data) => {
                     else throw error
                 }
 
-       
+                const patient = await collections.PatientModel.findOne({ patient_id: data.body.patient_id ? data.body.patient_id : patientId }, { _id: 0 })
+                
+                if (patient == null) { throw returnStatement(false, "patient id not found")}
+                
                 const doctor = await collections.UserModel.findOne({ user_id: data.body.doctor_id, client_id: userDetails.client_id }, { _id: 0 })
                     .populate({
                         path: 'user_details',
@@ -367,7 +371,6 @@ const createNewAppointmentApi = async (data) => {
                 const appointmentDetails = {
                     client_id: userDetails.client_id,
                     op_id: data.body.op_id ? data.body.op_id : null,
-                    usg_ref_id: data.body.usg_ref_id ? data.body.usg_ref_id : null,
                     patient_id: data.body.patient_id ? data.body.patient_id : patientId,
                     doctor_id: data.body.doctor_id,
                     branch_id: data.body.branch_id,
