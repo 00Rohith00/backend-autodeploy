@@ -76,7 +76,7 @@ const listOfScanTypesApi = async (data) => {
         else {
             throw returnStatement(false,
                 userDetails == null ? "used id is not found" :
-                    `${data.body.role_name} user can't able to access this api`)
+                    `no access for ${data.body.role_name} to view the list of scan types`)
         }
     }
     catch (error) {
@@ -146,7 +146,7 @@ const listOfHospitalDoctorsApi = async (data) => {
         else {
             throw returnStatement(false,
                 userDetails == null ? "used id is not found" :
-                    `${data.body.role_name} user can't able to access this api`)
+                    `no access for ${data.body.role_name} to view the list of doctors `)
         }
 
     }
@@ -193,7 +193,7 @@ const listOfHealthCenterApi = async (data) => {
         else {
             throw returnStatement(false,
                 userDetails == null ? "used id is not found" :
-                    `${data.body.role_name} user can't able to access this api`)
+                    `no access for ${data.body.role_name} to view the list of branches `)
         }
     }
     catch (error) {
@@ -246,7 +246,7 @@ const listOfHospitalRobotsApi = async (data) => {
             throw returnStatement(false,
                 userDetails == null ? "used id is not found" :
                     branchDetails == null ? "branch id is not found" :
-                        `${data.body.role_name} user can't able to access this api`)
+                        `no access for ${data.body.role_name} to view the list of robots`)
         }
     }
     catch (error) {
@@ -298,104 +298,115 @@ const createNewAppointmentApi = async (data) => {
 
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
 
         if (userDetails != null && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
-            let patientId
+            const [doctorDetails, branchDetails, robotDetails, clientDetails] = await Promise.all([
+                await collections.UserModel.findOne({ user_id: data.body.doctor_id, client_id: userDetails.client_id }),
+                await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: userDetails.client_id }),
+                await collections.RobotModel.findOne({ robot_id: data.body.robot_id, branch_id: data.body.branch_id }),
+                await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, scan_type: 1 })
+            ])
 
-            const patientDetails = {
-                client_id: userDetails.client_id,
-                patient_mobile_number: data.body.patient_mobile_number,
-                patient_name: data.body.patient_name,
-                patient_email_id: data.body.patient_email_id,
-                patient_gender: data.body.patient_gender,
-                patient_age: data.body.patient_age,
-                patient_pin_code: data.body.patient_pin_code,
-                electronic_id: data.body.electronic_id,
-                action_required: false,
-                created_by: data.body.user_id,
-            }
+            if (doctorDetails != null && branchDetails != null && robotDetails != null && clientDetails != null) {
 
-            if (data.body.op_id) {
-                const patientDetails = await collections.PatientModel.findOne({ op_id: data.body.op_id })
+                const billingId = data.body.billing_id ? true : false
 
-                if (patientDetails != null) {
-                    throw returnStatement(false, "OP-ID is duplicate")
+                if (billingId) {
+                    const appointmentDetails = await collections.AppointmentModel.findOne({ billing_id: data.body.billing_id })
+
+                    if (appointmentDetails != null) { throw returnStatement(false, "billing id already exists") }
                 }
-                patientDetails.op_id = data.body.op_id
 
-            }
+                if (!clientDetails.scan_type.includes(data.body.scan_type)) { throw returnStatement(false, "scan type not found") }
 
-            if (!data.body.patient_id) {
-                const createPatient = await collections.PatientModel.create(patientDetails)
-                if (createPatient) patientId = createPatient.patient_id
-                else throw error
-            }
-            
-            const patient = await collections.PatientModel.findOne({ patient_id: data.body.patient_id ? data.body.patient_id : patientId,  client_id: userDetails.client_id})
-            const doctor = await collections.UserModel.findOne({ user_id: data.body.doctor.id, client_id: userDetails.client_id }, { _id: 0 })
+                let patientId
+                if (!data.body.patient_id) {
+
+                    const patientDetails = {
+                        client_id: userDetails.client_id,
+                        patient_mobile_number: data.body.patient_mobile_number,
+                        patient_name: data.body.patient_name,
+                        patient_email_id: data.body.patient_email_id,
+                        patient_gender: data.body.patient_gender,
+                        patient_age: data.body.patient_age,
+                        patient_pin_code: data.body.patient_pin_code,
+                        electronic_id: data.body.electronic_id,
+                        action_required: false,
+                        created_by: data.body.user_id,
+                    }
+
+                    if (data.body.op_id) {
+                        const isExistingOpId = await collections.PatientModel.findOne({ op_id: data.body.op_id })
+
+                        if (isExistingOpId != null) {
+                            throw returnStatement(false, "OP-ID is duplicate")
+                        }
+                        patientDetails.op_id = data.body.op_id
+                    }
+
+                    const createPatient = await collections.PatientModel.create(patientDetails)
+                    if (createPatient._id) patientId = createPatient.patient_id
+                    else throw error
+                }
+
+       
+                const doctor = await collections.UserModel.findOne({ user_id: data.body.doctor_id, client_id: userDetails.client_id }, { _id: 0 })
                     .populate({
                         path: 'user_details',
                         select: 'user_name doctor',
                     })
-            const robot = await collections.RobotModel.findOne({ robot_id: data.body.robot_id, branch_id: data.body.branch_id })
-            
                 
-            if (patient != null && doctor != null && robot != null) {
-                  
-                if (doctor.user_details.doctor == null) {  throw returnStatement(false, "doctor id not found") }
+                    const conferenceInfo = {
+                        owner: doctor.user_details.user_name,
+                        appointment_date: data.body.date,
+                        appointment_time: data.body.time
+                    }
+                    
+                const appointmentDetails = {
+                    client_id: userDetails.client_id,
+                    op_id: data.body.op_id ? data.body.op_id : null,
+                    usg_ref_id: data.body.usg_ref_id ? data.body.usg_ref_id : null,
+                    patient_id: data.body.patient_id ? data.body.patient_id : patientId,
+                    doctor_id: data.body.doctor_id,
+                    branch_id: data.body.branch_id,
+                    robot_id: data.body.robot_id,
+                    date: data.body.date,
+                    time: data.body.time,
+                    scan_type: data.body.scan_type,
+                    differential_diagnosis: data.body.differential_diagnosis,
+                    appointment_status: "up_coming",
+                    appointment_type: "normal_appointment",
+                    created_by: data.body.user_id,
+                    is_report_sent: false,
+                    call_url: await videoCallApi(conferenceInfo),
+                    action_required: false
+                }
+
+                if (billingId) { appointmentDetails.billing_id = data.body.billing_id }
+
+                const createAppointment = await collections.AppointmentModel.create(appointmentDetails)
+
+                if (createAppointment) { return returnStatement(true, "appointment is created on " + data.body.date) }
+
+                else { throw error }
             }
             else {
                 throw returnStatement(false,
-                    patient == null ? "patient id not found" :
-                        robot == null ? "robot id or branch or is not found" : "doctor id not found" )            
-                }
-            
-            const conferenceInfo = {
-                owner: doctor.user_details.user_name,
-                appointment_date: data.body.date,
-                appointment_time: data.body.time ? data.body.time : "00:00:00"
+                    doctorDetails == null ? "doctor id not found" :
+                        branchDetails == null ? "branch id not found" :
+                            robotDetails == null ? "robot id not found" : "client id not found")
             }
-
-            const appointmentDetails = {
-                client_id: client_id,
-                op_id: data.body.op_id ? data.body.op_id : null,
-                billing_id: data.body.billing_id ? data.body.billing_id : null,
-                usg_ref_id: data.body.usg_ref_id ? data.body.usg_ref_id : null,
-                patient_id: data.body.patient_id ? data.body.patient_id : patientId,
-                doctor_id: data.body.doctor_id,
-                branch_id: data.body.branch_id,
-                robot_id: data.body.robot_id,
-                date: data.body.date,
-                time: data.body.time ? data.body.time : "00-00-00",
-                scan_type: data.body.scan_type,
-                differential_diagnosis: data.body.differential_diagnosis,
-                appointment_status: "up_coming",
-                appointment_type: "normal_appointment",
-                created_by: data.body.user_id,
-                is_report_sent: false,
-                call_url: await videoCallApi(conferenceInfo),
-                action_required: false
-            }
-
-            const createAppointment = await collections.AppointmentModel.create(appointmentDetails)
-
-            if (createAppointment) {
-
-                return returnStatement(true, "appointment is created on " + data.body.date)
-            }
-            else { throw error }
-
         }
         else {
             throw returnStatement(false,
-                userDetails == null ? "used id is not found" :
-                    `${data.body.role_name} user can't able to access this api`)
+                userDetails == null ? "user id not found" :
+                    `no access for ${data.body.role_name} to create new appointment`)
         }
-
     }
     catch (error) {
+        console.log(error);
         if (error.status == false && error.message != null) { throw error.message }
         else { throw error._message ? error._message : "internal server error" }
     }
@@ -427,7 +438,7 @@ const cancelAppointmentApi = async (data) => {
         if (userDetails != null && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
             const appointmentDetails = await collections.AppointmentModel
-                .findOneAndDelete({ appointment_id: data.body.appointment_id })
+                .findOneAndDelete({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id })
 
             if (appointmentDetails != null) {
                 return returnStatement(true, "appointment is cancelled")
@@ -437,7 +448,7 @@ const cancelAppointmentApi = async (data) => {
         else {
             throw returnStatement(false,
                 userDetails == null ? "used id is not found" :
-                    `${data.body.role_name} user can't able to access this api`)
+                    `no access for ${data.body.role_name} to cancel the appointment`)
         }
     }
     catch (error) {
@@ -468,7 +479,7 @@ const listOfHospitalAppointmentsApi = async (data) => {
         if (userDetails != null && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
             const appointments = await collections.AppointmentModel
-                .find({ client_id: data.body.client_id, date: data.body.date },
+                .find({ client_id: userDetails.client_id, date: data.body.date },
                     { appointment_id: 1, scan_type: 1, doctor_id: 1, time: 1, patient_id: 1, _id: 0 })
 
             let listOfAppointments = []
@@ -499,7 +510,7 @@ const listOfHospitalAppointmentsApi = async (data) => {
         else {
             throw returnStatement(false,
                 userDetails == null ? "used id is not found" :
-                    `${data.body.role_name} user can't able to access this api`)
+                    `no access for ${data.body.role_name} to view the list of appointment`)
         }
     }
 

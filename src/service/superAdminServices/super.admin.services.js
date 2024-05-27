@@ -187,12 +187,13 @@ const createNewHealthCenterApi = async (data) => {
 const createNewRobotApi = async (data) => {
 
     try {
-        const [superAdminDetails, healthCenterDetails, robotCollection] = await Promise.all([
+        const [superAdminDetails, robotCollection] = await Promise.all([
             await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
-            await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id }),
             await collections.RobotModel.findOne({ robot_registration_id: data.body.robot_registration_id })
         ])
 
+        const healthCenterDetails = await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: superAdminDetails.client_id })
+        
         if (superAdminDetails != null && healthCenterDetails != null && robotCollection == null && data.body.role_name === role.superAdmin) {
 
             const robotDetails = {

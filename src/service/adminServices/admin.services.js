@@ -29,11 +29,12 @@ const createNewSystemAdminApi = async (data) => {
 
   try {
     // Fetching necessary details from different collections
-    const [adminDetails, healthCenterDetails, isEmailExist] = await Promise.all([
+    const [adminDetails, isEmailExist] = await Promise.all([
       await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
-      await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id }),
       await collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id })
     ])
+
+    const healthCenterDetails = await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: adminDetails.client_id })
 
     // Validation checks
     if (adminDetails != null && isEmailExist == null && data.body.role_name === role.admin && healthCenterDetails != null) {
