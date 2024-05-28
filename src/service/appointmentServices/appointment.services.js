@@ -352,7 +352,15 @@ const createNewAppointmentApi = async (data) => {
                     else throw error
                 }
 
-                const patient = await collections.PatientModel.findOne({ patient_id: data.body.patient_id ? data.body.patient_id : patientId }, { _id: 0 })
+                let patientParams = {} 
+                if (data.body.op_id) {
+                    patientParams = {
+                        patient_id: data.body.patient_id ? data.body.patient_id : patientId,
+                        op_id: data.body.op_id
+                    }
+                }
+                else { patientParams = { patient_id: data.body.patient_id ? data.body.patient_id : patientId }}
+                const patient = await collections.PatientModel.findOne(patientParams, { _id: 0 })
                 
                 if (patient == null) { throw returnStatement(false, "patient id not found")}
                 
@@ -370,7 +378,6 @@ const createNewAppointmentApi = async (data) => {
                     
                 const appointmentDetails = {
                     client_id: userDetails.client_id,
-                    op_id: data.body.op_id ? data.body.op_id : null,
                     patient_id: data.body.patient_id ? data.body.patient_id : patientId,
                     doctor_id: data.body.doctor_id,
                     branch_id: data.body.branch_id,
@@ -387,11 +394,12 @@ const createNewAppointmentApi = async (data) => {
                     action_required: false
                 }
 
+                if( data.body.op_id ) appointmentDetails.op_id = data.body.op_id 
                 if (billingId) { appointmentDetails.billing_id = data.body.billing_id }
 
                 const createAppointment = await collections.AppointmentModel.create(appointmentDetails)
 
-                if (createAppointment) { return returnStatement(true, "appointment is created on " + data.body.date) }
+                if (createAppointment) { return returnStatement(true, `appointment is created on ${data.body.date}`) }
 
                 else { throw error }
             }
@@ -409,7 +417,6 @@ const createNewAppointmentApi = async (data) => {
         }
     }
     catch (error) {
-        console.log(error);
         if (error.status == false && error.message != null) { throw error.message }
         else { throw error._message ? error._message : "internal server error" }
     }
@@ -554,10 +561,10 @@ const appointmentDetailsApi = async (data) => {
         if (appointmentDetails != null) {
             const patientId = await collections.PatientModel
                 .findOne({ patient_id: appointmentDetails.patient_id },
-                    {  // @rohith -change patient pincode (location api)
+                    { 
                         _id: 0, patient_name: 1, patient_email_id: 1,
                         patient_gender: 1, patient_age: 1, patient_mobile_number: 1,
-                        patient_pin_code: 1, electronic_id: 1
+                        patient_pin_code: 1, electronic_id: 1, patient_address: 1
                     })
 
             const doctorName = await collections.UserModel
