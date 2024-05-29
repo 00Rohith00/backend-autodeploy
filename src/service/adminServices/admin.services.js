@@ -17,6 +17,7 @@ import { returnStatement } from "../../utils/return.handler.js"
  * @param {string} data.body.user_email_id - The email ID of the new system admin.
  * @param {string} data.body.user_contact_number - The contact number of the new system admin.
  * @param {string} data.body.user_location - The location of the new system admin.
+ * @param {string} data.body.user_age - The age  of the new system admin.
  * @param {string} data.body.user_pin_code - The pin code of the new system admin.
  * @param {string} data.body.role_name - The role name of the new system admin.
  * @param {string} data.body.image_url - The URL of the image of the new system admin.

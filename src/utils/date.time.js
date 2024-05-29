@@ -29,7 +29,12 @@ export const convertTimeTo24HourFormat = (time12h) => {
     return `${hours24Str}:${minutesStr}`
 }
 
+export const validateDateTime = (date, time) => {
 
+    const now = new Date()
+    const inputDateTime = new Date(`${date}T${convertTimeTo24HourFormat(time)}`)
+    return inputDateTime > now
+}
 
 export const isValidDate = (year, month, day) => {
 

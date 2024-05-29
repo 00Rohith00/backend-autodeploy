@@ -32,10 +32,11 @@ const createNewClientApi = async (data) => {
         const clientDetails = {
             hospital_name: data.body.hospital_name,
             logo_url: data.body.logo_url,
-            domain_url: data.body.domain_url,
-            scan_type: data.body.scan_type,
-            department: data.body.department,
+            domain_url: data.body.domain_url
         }
+
+        if (data.body.scan_type != null) clientDetails.scan_type = data.body.scan_type 
+        if (data.body.department != null) clientDetails.department = data.body.department 
 
         const isExistingHospitalName = await collections.HospitalClientModel.findOne({ hospital_name: data.body.hospital_name })
 

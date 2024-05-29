@@ -378,7 +378,7 @@ const patientSchema = new mongoose.Schema({
     patient_gender: { type: String, required: true },
     patient_age: { type: Number, required: true },
     patient_pin_code: { type: Number, required: true },
-    patient_address: {type: String, required: true},
+    patient_address: {type: String },
     electronic_id: { type: String },
     action_required: { type: Boolean, required: true },
     created_by: { type: Number, required: true },
