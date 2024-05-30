@@ -560,37 +560,41 @@ const appointmentDetailsApi = async (data) => {
             const appointmentDetails = await collections.AppointmentModel
                 .findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id },
                     {
-                        _id: 0, __v: 0, appointment_type: 0,
+                        _id: 0, __v: 0, appointment_type: 0, appointment_status: 0,
                         created_by: 0, is_report_sent: 0, action_required: 0,
                         createdAt: 0, updatedAt: 0, client_id: 0
                     })
 
             if (appointmentDetails == null) { throw returnStatement(false, "appointment id not found") }
 
-            const patientId = await collections.PatientModel
-                .findOne({ patient_id: appointmentDetails.patient_id },
-                    {
-                        _id: 0, patient_name: 1, patient_email_id: 1,
-                        patient_gender: 1, patient_age: 1, patient_mobile_number: 1,
-                        patient_pin_code: 1, electronic_id: 1, patient_address: 1
-                    })
+            const [patientId, doctorName, robotDetails, branch] = await Promise.all([
 
-            const doctorName = await collections.UserModel
-                .findOne({ user_id: appointmentDetails.doctor_id }, { user_details: 1, _id: 0 })
-                .populate({
-                    path: 'user_details',
-                    select: '-_id user_name',
-                })
+                await collections.PatientModel
+                    .findOne({ patient_id: appointmentDetails.patient_id },
+                        {
+                            _id: 0, patient_name: 1, patient_email_id: 1,
+                            patient_gender: 1, patient_age: 1, patient_mobile_number: 1,
+                            patient_pin_code: 1, electronic_id: 1, patient_address: 1
+                        }),
 
-            const robotDetails = await collections.RobotModel
-                .findOne({ robot_id: appointmentDetails.robot_id }, { robot_registration_id: 1, _id: 0 })
+                await collections.UserModel
+                    .findOne({ user_id: appointmentDetails.doctor_id }, { user_details: 1, _id: 0 })
+                    .populate({
+                        path: 'user_details',
+                        select: '-_id user_name',
+                    }),
 
-            if (patientId == null || doctorName == null || robotDetails == null) {
-                throw returnStatement(false, "Either one of the following id is not found [doctor, robot, patient]")
-            }
+                await collections.RobotModel
+                    .findOne({ robot_id: appointmentDetails.robot_id, branch_id: appointmentDetails.branch_id }, { robot_registration_id: 1, _id: 0 }),
+
+                await collections.HealthCenterModel
+                .findOne({ branch_id: appointmentDetails.branch_id }, { branch_name: 1, _id: 0 })
+            ]) 
+
             return returnStatement(true, "appointment details", {
                 ...patientId._doc,
                 ...robotDetails._doc,
+                branch_name: branch.branch_name,
                 doctor_name: doctorName.user_details.user_name,
                 ...appointmentDetails._doc,
             })
