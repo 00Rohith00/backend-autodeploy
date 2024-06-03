@@ -34,7 +34,7 @@ const createNewAdminApi = async (data) => {
             await collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id })
         ])
 
-        if (superAdminDetails != null && isExistingEmailId == null && data.body.role_name === role.superAdmin) {
+        if (superAdminDetails && !isExistingEmailId && data.body.role_name === role.superAdmin) {
             const personalDetails = {
                 user_name: data.body.user_name,
                 user_email_id: data.body.user_email_id,
@@ -96,14 +96,14 @@ const createNewAdminApi = async (data) => {
         }
         else {
             throw returnStatement(false,
-                superAdminDetails == null ? "used id is not found" :
-                    isExistingEmailId != null ? "email id is already exists" :
+                !superAdminDetails ? "used id is not found" :
+                    isExistingEmailId ? "email id is already exists" :
                         `${data.body.role_name} user can't able to create new admin`)
         }
     }
     catch (error) {
         rollBack(adminRollBackParams)
-        if (error.status == false && error.message != null) { throw error.message }
+        if (error.status == false && error.message ) { throw error.message }
         else { throw  error._message ?  error._message : "internal server error" }
     }
 }
@@ -134,7 +134,7 @@ const createNewHealthCenterApi = async (data) => {
 
         const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
 
-        if (superAdminDetails != null && data.body.role_name === role.superAdmin) {
+        if (superAdminDetails && data.body.role_name === role.superAdmin) {
 
             const healthCenterDetails = {
                 client_id: superAdminDetails.client_id,
@@ -155,12 +155,12 @@ const createNewHealthCenterApi = async (data) => {
         }
         else {
             throw returnStatement(false,
-                superAdminDetails == null ? "used id is not found" :
+                !superAdminDetails ? "used id is not found" :
                     `${data.body.role_name} user cannot create new health center`)
         }
     }
     catch (error) {
-        if (error.status == false && error.message != null) { throw error.message }
+        if (error.status == false && error.message ) { throw error.message }
         else { throw  error._message ?  error._message : "internal server error" }
     }
 }
@@ -194,7 +194,7 @@ const createNewRobotApi = async (data) => {
 
         const healthCenterDetails = await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: superAdminDetails.client_id })
         
-        if (superAdminDetails != null && healthCenterDetails != null && robotCollection == null && data.body.role_name === role.superAdmin) {
+        if (superAdminDetails && healthCenterDetails && !robotCollection && data.body.role_name === role.superAdmin) {
 
             const robotDetails = {
                 robot_registration_id: data.body.robot_registration_id,
@@ -212,14 +212,14 @@ const createNewRobotApi = async (data) => {
         }
         else {
             throw returnStatement(false,
-                superAdminDetails == null ? "used id is not found" :
-                    healthCenterDetails == null ? "branch id is not found" :
+                !superAdminDetails ? "used id is not found" :
+                    !healthCenterDetails ? "branch id is not found" :
                         data.body.role_name != role.superAdmin ? `${data.body.role_name} user can't able to create new robot` :
                             "robot registration id already exists")
         }
     }
     catch (error) {
-        if (error.status == false && error.message != null) { throw error.message }
+        if (error.status == false && error.message ) { throw error.message }
         else { throw  error._message ?  error._message : "internal server error" }
     }
 }
@@ -229,7 +229,7 @@ const addNewScanApi = async (data) => {
     try {
         const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
 
-        if (superAdminDetails != null && data.body.role_name === role.superAdmin) {
+        if (superAdminDetails && data.body.role_name === role.superAdmin) {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: superAdminDetails.client_id })
 
@@ -248,12 +248,12 @@ const addNewScanApi = async (data) => {
         }
         else {
             throw returnStatement(false,
-                superAdminDetails == null ? "used id is not found" :
+                !superAdminDetails ? "used id is not found" :
                     `${data.body.role_name} user cannot add new scan type`)
         }
     }
     catch (error) {
-        if (error.status == false && error.message != null) { throw error.message }
+        if (error.status == false && error.message ) { throw error.message }
         else { throw  error._message ?  error._message : "internal server error" }
     }
 }
@@ -263,7 +263,7 @@ const deleteScanApi = async (data) => {
     try {
         const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
 
-        if (superAdminDetails != null && data.body.role_name === role.superAdmin) {
+        if (superAdminDetails && data.body.role_name === role.superAdmin) {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: superAdminDetails.client_id })
 
@@ -283,13 +283,13 @@ const deleteScanApi = async (data) => {
         }
         else {
             throw returnStatement(false,
-                superAdminDetails == null ? "used id is not found" :
+                !superAdminDetails ? "used id is not found" :
                     `${data.body.role_name} user cannot able to  delete existing scan type`)
         }
     }
     catch (error) {
         // error.message is "user id is not found"
-        if (error.status == false && error.message != null) {
+        if (error.status == false && error.message ) {
             throw error.message
         }
         else { throw  error._message ?  error._message : "internal server error" }
@@ -300,7 +300,7 @@ const addNewDepartmentApi = async (data) => {
     try {
         const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
 
-        if (superAdminDetails != null && data.body.role_name === role.superAdmin) {
+        if (superAdminDetails && data.body.role_name === role.superAdmin) {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: superAdminDetails.client_id })
 
@@ -319,12 +319,12 @@ const addNewDepartmentApi = async (data) => {
         }
         else {
             throw returnStatement(false,
-                superAdminDetails == null ? "used id is not found" :
+                !superAdminDetails ? "used id is not found" :
                     `${data.body.role_name} user cannot add department`)
         }
     }
     catch (error) {
-        if (error.status == false && error.message != null) { throw error.message }
+        if (error.status == false && error.message ) { throw error.message }
         else { throw  error._message ?  error._message : "internal server error" }
     }
 }
@@ -332,7 +332,7 @@ const deleteDepartmentApi = async (data) => {
     try {
         const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
 
-        if (superAdminDetails != null && data.body.role_name === role.superAdmin) {
+        if (superAdminDetails && data.body.role_name === role.superAdmin) {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: superAdminDetails.client_id })
 
@@ -352,13 +352,13 @@ const deleteDepartmentApi = async (data) => {
         }
         else {
             throw returnStatement(false,
-                superAdminDetails == null ? "used id is not found" :
+                !superAdminDetails ? "used id is not found" :
                     `${data.body.role_name} user cannot able to  delete existing department`)
         }
     }
     catch (error) {
         // error.message is "user id is not found"
-        if (error.status == false && error.message != null) {
+        if (error.status == false && error.message ) {
             throw error.message
         }
         else { throw  error._message ?  error._message : "internal server error" }
@@ -369,3 +369,4 @@ export default {
     createNewAdminApi, createNewHealthCenterApi, createNewRobotApi,
     addNewScanApi, deleteScanApi, addNewDepartmentApi, deleteDepartmentApi
 }
+

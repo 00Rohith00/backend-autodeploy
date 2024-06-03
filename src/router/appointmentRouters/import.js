@@ -12,13 +12,15 @@ const listOfHealthCenterApi = [...appointmentRouterCommonMiddlewares]
 const listOfHospitalRobotsApi = [...appointmentRouterCommonMiddlewares, validation.listOfHospitalRobotsApi]
 const createNewAppointmentApi = [...appointmentRouterCommonMiddlewares, validation.createNewAppointmentApi]
 const appointmentDetailsApi = [...appointmentRouterCommonMiddlewares, validation.appointmentDetailsApi]
-const cancelAppointmentApi = [...appointmentRouterCommonMiddlewares, validation.cancelAppointmentApi]
+const cancelAppointmentApi = [...appointmentRouterCommonMiddlewares, validation.appointmentDetailsApi]
 const editAppointmentApi = [...appointmentRouterCommonMiddlewares, validation.editAppointmentApi]
+const rescheduleAppointmentApi = [...appointmentRouterCommonMiddlewares, validation.rescheduleAppointmentApi]
 const listOfHospitalAppointmentsApi = [...appointmentRouterCommonMiddlewares, validation.listOfHospitalAppointmentsApi]
 
 
 export default {
     searchPatientInformationApi, listOfScanTypesApi, listOfHospitalDoctorsApi, 
     listOfHealthCenterApi, listOfHospitalRobotsApi, createNewAppointmentApi,
-    appointmentDetailsApi, cancelAppointmentApi, editAppointmentApi, listOfHospitalAppointmentsApi
+    appointmentDetailsApi, cancelAppointmentApi, editAppointmentApi, listOfHospitalAppointmentsApi,
+    rescheduleAppointmentApi
 }

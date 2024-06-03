@@ -5,7 +5,6 @@ import controller from "../../controller/appointmentControllers/appointment.cont
 
 const appointmentRouters = router
 
-
 appointmentRouters.post('/search-patient-information', middleware.searchPatientInformationApi, controller.searchPatientInformationApi)
 appointmentRouters.post('/list-of-scan-types', middleware.listOfScanTypesApi, controller.listOfScanTypesApi)
 appointmentRouters.post('/list-of-hospital-doctors', middleware.listOfHospitalDoctorsApi, controller.listOfHospitalDoctorsApi)
@@ -15,8 +14,7 @@ appointmentRouters.post('/create-new-appointment', middleware.createNewAppointme
 appointmentRouters.post('/appointment-details', middleware.appointmentDetailsApi, controller.appointmentDetailsApi)
 appointmentRouters.post('/cancel-appointment', middleware.cancelAppointmentApi, controller.cancelAppointmentApi)
 appointmentRouters.post('/edit-appointment', middleware.editAppointmentApi, controller.editAppointmentApi)
+appointmentRouters.post('/reschedule-appointment', middleware.rescheduleAppointmentApi, controller.rescheduleAppointmentApi)
 appointmentRouters.post('/list-of-hospital-appointments', middleware.listOfHospitalAppointmentsApi, controller.listOfHospitalAppointmentsApi)
-
-
 
 export default appointmentRouters

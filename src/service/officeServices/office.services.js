@@ -35,27 +35,21 @@ const createNewClientApi = async (data) => {
             domain_url: data.body.domain_url
         }
 
-        if (data.body.scan_type != null) clientDetails.scan_type = data.body.scan_type 
-        if (data.body.department != null) clientDetails.department = data.body.department 
+        if (data.body.scan_type) clientDetails.scan_type = data.body.scan_type 
+        if (data.body.department) clientDetails.department = data.body.department 
 
         const isExistingHospitalName = await collections.HospitalClientModel.findOne({ hospital_name: data.body.hospital_name })
 
-        if (isExistingHospitalName == null) {
-            const createNewClient = await collections.HospitalClientModel.create(clientDetails)
+        if (isExistingHospitalName) throw returnStatement(false, 'hospital name is already exist')
+        
+        const createNewClient = await collections.HospitalClientModel.create(clientDetails)
 
-            if (createNewClient._id) { return returnStatement(true, "hospital client is created") }
-
-            else {
-                // once the code is entered into this else part, which indicates the client is not created
-                // and also can't able to find the exact reason for that
-                // so just throwing an empty error to catch part to make this api as "FALSE" status with the message of "INTERNAL SERVER ERROR"
-                throw error
-            }
-        }
-        else { throw returnStatement(false, 'hospital name is already exist') }
+        if (!createNewClient._id) { throw error }
+        
+        return returnStatement(true, "hospital client is created")
     }
     catch (error) {     
-        if (error.status == false && error.message != null) { throw error.message }
+        if (error.status == false && error.message) { throw error.message }
         else { throw  error._message ?  error._message : "internal server error" }
     }
 }
@@ -94,7 +88,7 @@ const createNewSuperAdminApi = async (data) => {
             collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id })
         ])
 
-        if (clientDetails != null && isExistingEmailId == null) {
+        if (clientDetails && !isExistingEmailId) {
 
             const personalDetails = {
                 user_name: data.body.user_name,
@@ -162,12 +156,12 @@ const createNewSuperAdminApi = async (data) => {
             else { throw error }
         }
         else {
-            throw returnStatement(false, clientDetails == null ? "client id is not found" : "email id is already exists")
+            throw returnStatement(false, !clientDetails ? "client id is not found" : "email id is already exists")
         }
     }
     catch (error) {
         rollBack(superAdminRollBackParams)
-        if (error.status == false && error.message != null) { throw error.message }
+        if (error.status == false && error.message) { throw error.message }
         else { throw  error._message ?  error._message : "internal server error" }
     }
 }

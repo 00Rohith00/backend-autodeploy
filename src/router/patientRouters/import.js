@@ -7,14 +7,11 @@ import validation from "../../middleware/validationSchema/validator.schema.js"
 const patientCommonMiddlewares = [apiLogger, tokenVerification]
 
 const createNewPatientsApi = [...patientCommonMiddlewares, validation.createNewPatientsApi]
-const patientDetailsApi = [...patientCommonMiddlewares, validation.patientDetailsApi]
-const editPatientDetailsApi = [...patientCommonMiddlewares, validation.editPatientDetailsApi]
-
+const editPatientDetailsApi = [...patientCommonMiddlewares, validation.createNewPatientsApi]
 const listOfPatientsApi = [...patientCommonMiddlewares]
-const previousHistoryApi = [...patientCommonMiddlewares,]
+const previousHistoryApi = [...patientCommonMiddlewares]
 
 export default {
-  createNewPatientsApi, listOfPatientsApi,
-  patientDetailsApi, previousHistoryApi,
+  createNewPatientsApi, listOfPatientsApi,  previousHistoryApi,
   editPatientDetailsApi, editPatientDetailsApi
 }

@@ -42,26 +42,6 @@ const listOfPatientsApi = async (request, response) => {
 }
 
 /**
- * Admin retrieves patient details through the API and sends the result as a response.
- *
- * @param {Object} request - The request object containing the necessary data for retrieving patient details.
- * @param {Object} response - The response object used to send the result of the API call.
- * @return {Promise<void>} A Promise that resolves when the API call is complete.
- */
-const patientDetailsApi = async (request, response) => {
-    try {
-        const result = await services.patientDetailsApi(request)
-        if (result) {
-            //write in success-logger database
-            okResponse(response, result)
-        }
-    } catch (error) {
-        // write in fail-logger database
-        failResponse(response, { status: false, message: error })
-    }
-}
-
-/**
  * Admin edits patient details through the API and sends the result as a response.
  *
  * @param {Object} request - The request object containing the necessary data for editing patient details.
@@ -102,7 +82,5 @@ const previousHistoryApi = async (request, response) => {
 }
 
 export default {
-    createNewPatientsApi, listOfPatientsApi,
-    patientDetailsApi, previousHistoryApi,
-    editPatientDetailsApi
+    createNewPatientsApi, listOfPatientsApi,  previousHistoryApi, editPatientDetailsApi
 }

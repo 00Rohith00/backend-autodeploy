@@ -38,7 +38,7 @@ const createNewSystemAdminApi = async (data) => {
     const healthCenterDetails = await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: adminDetails.client_id })
 
     // Validation checks
-    if (adminDetails != null && isEmailExist == null && data.body.role_name === role.admin && healthCenterDetails != null) {
+    if (adminDetails && !isEmailExist && data.body.role_name === role.admin && healthCenterDetails) {
       // Creating personal details for the new user
       const personalDetails = {
         user_name: data.body.user_name,
@@ -104,9 +104,9 @@ const createNewSystemAdminApi = async (data) => {
     else {
       // Error handling for validation failures
       throw returnStatement(false,
-        adminDetails == null ? "User ID is not found" :
-          isEmailExist != null ? "Email ID already exists" :
-            healthCenterDetails == null ? "Branch ID not found" :
+        !adminDetails ? "User ID is not found" :
+          isEmailExist ? "Email ID already exists" :
+            !healthCenterDetails ? "Branch ID not found" :
               `${data.body.role_name} user can't able to create a new system admin`)
     }
   } catch (error) {
@@ -114,7 +114,7 @@ const createNewSystemAdminApi = async (data) => {
     rollBack(systemAdminRollBackParams)
 
     // Error handling
-    if (error.status == false && error.message != null) { throw error.message }
+    if (error.status == false && error.message) { throw error.message }
     else { throw error._message ? error._message : "internal server error" }
   }
 }
@@ -156,7 +156,7 @@ const createNewDoctorApi = async (data) => {
       await collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id })
     ])
 
-    if (adminDetails != null && doctorCollection == null && isEmailExist == null && data.body.role_name === role.admin) {
+    if (adminDetails && !doctorCollection && !isEmailExist && data.body.role_name === role.admin) {
 
       const doctorDetails = {
         doctor_registration_id: data.body.doctor_registration_id,
@@ -220,15 +220,15 @@ const createNewDoctorApi = async (data) => {
     }
     else {
       throw returnStatement(false,
-        adminDetails == null ? "used id is not found" :
-          isEmailExist != null ? "email id is already exists" :
-            doctorCollection != null ? " doctor registration id is already exist" :
+        !adminDetails ? "used id is not found" :
+          isEmailExist ? "email id is already exists" :
+            doctorCollection ? " doctor registration id is already exist" :
               `${data.body.role_name} user can't able to create new doctor`)
     }
   }
   catch (error) {
     rollBack(doctorRollBackPrams)
-    if (error.status == false && error.message != null) { throw error.message }
+    if (error.status == false && error.message ) { throw error.message }
     else { throw error._message ? error._message : "internal server error" }
   }
 }

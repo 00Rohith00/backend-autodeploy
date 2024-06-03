@@ -17,6 +17,8 @@ const createNewClientApi = (request, response, next) => {
         hospital_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
         logo_url: joi.string().uri().required(),
         domain_url: joi.string().uri().required(),
+        scan_type: joi.array().items(joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30)).optional(),
+        department: joi.array().items(joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30)).optional()
     }
 
     const clientDetails = {
@@ -25,16 +27,10 @@ const createNewClientApi = (request, response, next) => {
         domain_url: request.body.domain_url,
     }
 
-    if (request.body.scan_type != null) {
-        clientDetails.scan_type = request.body.scan_type
-        hospitalClientSchemaParams.scan_type = joi.array().items(joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30))
-    }
+    if (request.body.scan_type) clientDetails.scan_type = request.body.scan_type
 
-    if (request.body.department != null) {
-        clientDetails.department = request.body.department
-        hospitalClientSchemaParams.department = joi.array().items(joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30))
-    }
-    
+    if (request.body.department) clientDetails.department = request.body.department
+
     const { error } = joi.object(hospitalClientSchemaParams).validate(clientDetails)
 
     if (error) {
@@ -81,7 +77,7 @@ const createNewUserApi = (request, response, next) => {
     }
 
     if (!(request.body.user_gender == 'male' || request.body.user_gender == 'female')) {
-        failResponse(response, { status: false, message: "invalid gender" })
+        failResponse(response, { status: false, message: "invalid gender name" })
     }
     if (request.route.path.includes('/create-new-admin')) {
 
@@ -105,6 +101,8 @@ const createNewUserApi = (request, response, next) => {
             mbbs_completed_year: joi.number().integer().min(1900).max(new Date().getFullYear()).required(),
             doctor_department: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
             is_approved: joi.boolean().required(),
+            time_from: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).required(),
+            time_to: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).required()
         }
 
         const doctorDetails = {
@@ -114,15 +112,9 @@ const createNewUserApi = (request, response, next) => {
             is_approved: request.body.is_approved,
         }
 
-        if (request.body.time_from != null) {
-            doctorDetails.time_from = request.body.time_from
-            doctorDetailsValidation.time_from = joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).required()
-        }
+        if (request.body.time_from) doctorDetails.time_from = request.body.time_from
 
-        if (request.body.time_to != null) {
-            doctorDetails.time_to = request.body.time_to
-            doctorDetailsValidation.time_to = joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).required()
-        }
+        if (request.body.time_to) doctorDetails.time_to = request.body.time_to
 
         validationConditions = { ...validationConditions, ...doctorDetailsValidation }
         delete validationConditions.client_id
@@ -366,102 +358,31 @@ const verifyOptApi = (request, response, next) => {
 const createNewPatientsApi = (request, response, next) => {
     const patientSchema = joi.object(
         {
-            user_id: joi.number().required(),
-            op_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30),
+            op_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional(),
             patient_mobile_number: joi.string().regex(/^\d{10}$/).required(),
             patient_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
-            patient_email_id: joi.string().email(),
-            patient_gender: joi.string().regex(/^[a-zA-Z]+$/).required(),
+            patient_email_id: joi.string().email().optional(),
             patient_age: joi.number().required(),
             patient_pin_code: joi.number().required(),
-            electronic_id: joi.string().trim().regex(/^[a-zA-Z0-9]+$/).min(4).max(30)
+            patient_address: joi.string().regex(/^(?!.* {2})(?!.*\n{2})([A-Za-z0-9.'\-#@%&/, \n]*)$/).min(8).max(36).optional(),
+            electronic_id: joi.string().trim().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional()
         })
+
+    if (!(request.body.patient_gender == 'male' || request.body.patient_gender == 'female'))
+        failResponse(response, { status: false, message: "invalid gender name" })
 
     const patientDetails = {
-        op_id: request.body.op_id,
         patient_mobile_number: request.body.patient_mobile_number,
         patient_name: request.body.patient_name,
-        patient_email_id: request.body.patient_email_id,
-        patient_gender: request.body.patient_gender,
         patient_age: request.body.patient_age,
-        patient_pin_code: request.body.patient_pin_code,
-        electronic_id: request.body.electronic_id,
-        user_id: request.body.user_id,
+        patient_pin_code: request.body.patient_pin_code
     }
-    const { error } = patientSchema.validate(patientDetails)
-    if (error) {
-        failResponse(response, {
-            status: false,
-            message: error.details[0].message.includes('is required') ?
-                error.details[0].message : `invalid input in ${error.details[0].message.split(" ")[0]}`
-        })
-    }
-    else { next() }
-}
 
-/**
- * Validates the request body for the patient details API.
- *
- * @param {Object} request - The request object containing the body.
- * @param {Object} response - The response object.
- * @param {Function} next - The next middleware function.
- * @return {void}
- */
-const patientDetailsApi = (request, response, next) => {
-    const patientSchema = joi.object(
-        {
-            user_id: joi.number().required(),
-            patient_id: joi.number().required(),
-        })
+    if (request.body.op_id) patientDetails.op_id = request.body.op_id
+    if (request.body.electronic_id) patientDetails.electronic_id = request.body.electronic_id
+    if (request.body.patient_address) patientDetails.patient_address = request.body.patient_address
+    if (request.body.patient_email_id) patientDetails.patient_email_id = request.body.patient_email_id
 
-    const { error } = patientSchema.validate({
-        user_id: request.body.user_id,
-        patient_id: request.body.patient_id,
-    })
-
-    if (error) {
-        failResponse(response, {
-            status: false,
-            message: error.details[0].message.includes('is required') ?
-                error.details[0].message : `invalid input in ${error.details[0].message.split(" ")[0]}`
-        })
-    }
-    else { next() }
-}
-
-/**
- * Validates the request body for editing patient details API.
- *
- * @param {Object} request - The request object containing the body.
- * @param {Object} response - The response object.
- * @param {Function} next - The next middleware function.
- * @return {void}
- */
-const editPatientDetailsApi = (request, response, next) => {
-    const patientSchema = joi.object(
-        {
-            user_id: joi.number(),
-            op_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30),
-            patient_mobile_number: joi.string().regex(/^\d{10}$/),
-            patient_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30),
-            patient_email_id: joi.string(),
-            patient_gender: joi.string().regex(/^[a-zA-Z]+$/),
-            patient_age: joi.number(),
-            patient_pin_code: joi.number(),
-            electronic_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30),
-        })
-
-    const patientDetails = {
-        op_id: request.body.op_id,
-        patient_mobile_number: request.body.patient_mobile_number,
-        patient_name: request.body.patient_name,
-        patient_email_id: request.body.patient_email_id,
-        patient_gender: request.body.patient_gender,
-        patient_age: request.body.patient_age,
-        patient_pin_code: request.body.patient_pin_code,
-        electronic_id: request.body.electronic_id,
-        user_id: request.body.user_id,
-    }
     const { error } = patientSchema.validate(patientDetails)
     if (error) {
         failResponse(response, {
@@ -496,7 +417,20 @@ const editDoctorDetailsApi = (request, response, next) => { next() }
 
 // appointment module:
 
-const searchPatientInformationApi = (request, response, next) => { next() }
+const searchPatientInformationApi = (request, response, next) => { 
+
+    const { error } = joi.object({ phone_number: joi.string().regex(/^\d{10}$/).required() }).validate({ phone_number: request.body.patient_mobile_number })
+
+    if (error) {
+        failResponse(response, {
+            status: false,
+            message: error.details[0].message.includes('is required') ?
+                error.details[0].message : `invalid input in ${error.details[0].message.split(" ")[0]}`
+        })
+    }
+    else { next() }
+}
+ 
 
 const listOfHospitalRobotsApi = (request, response, next) => {
 
@@ -532,7 +466,7 @@ const customJoi = joi.extend((joi) => ({
 
 const createNewAppointmentApi = (request, response, next) => {
 
-    const appointmentSchema = 
+    const appointmentSchema =
     {
         patient_mobile_number: joi.string().regex(/^\d{10}$/).required(),
         patient_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
@@ -545,8 +479,13 @@ const createNewAppointmentApi = (request, response, next) => {
         date: customJoi.futureDate().required().label('Appointment-Date'),
         time: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).required().label('Appointment-Time'),
         scan_type: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
-        differential_diagnosis: joi.string().regex(/^(?!.* {2})(?!.*\n{2})([A-Za-z0-9.'\-#@%&/, \n]*)$/).min(3).max(30).required()
-
+        differential_diagnosis: joi.string().regex(/^(?!.* {2})(?!.*\n{2})([A-Za-z0-9.'\-#@%&/, \n]*)$/).min(3).max(30).required(),
+        patient_id: joi.number().optional(),
+        op_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional(),
+        billing_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional(),
+        electronic_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(16).optional(),
+        patient_address: joi.string().regex(/^(?!.* {2})(?!.*\n{2})([A-Za-z0-9.'\-#@%&/, \n]*)$/).min(8).max(36).optional(),
+        patient_email_id: joi.string().email().optional()
     }
 
     const appointmentDetails = {
@@ -563,49 +502,25 @@ const createNewAppointmentApi = (request, response, next) => {
         time: request.body.time,
         scan_type: request.body.scan_type,
         differential_diagnosis: request.body.differential_diagnosis,
-    
+
     }
 
-    if (request.body.patient_id != null)
-    {
-        appointmentDetails.patient_id = request.body.patient_id
-        appointmentSchema.patient_id = joi.number()
-    }
+    if (request.body.patient_id) appointmentDetails.patient_id = request.body.patient_id
 
-    if (request.body.op_id != null)
-    {
-        appointmentDetails.op_id = request.body.op_id
-        appointmentSchema.op_id = joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30)
-    }
+    if (request.body.op_id) appointmentDetails.op_id = request.body.op_id
 
-    if (request.body.billing_id != null)
-    {
-        appointmentDetails.billing_id = request.body.billing_id
-        appointmentSchema.billing_id =  joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30)
-    }
+    if (request.body.billing_id) appointmentDetails.billing_id = request.body.billing_id
 
-    if (request.body.electronic_id != null)
-    {
-        appointmentDetails.electronic_id = request.body.electronic_id
-        appointmentSchema.electronic_id = joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(16)
-    }
+    if (request.body.electronic_id) appointmentDetails.electronic_id = request.body.electronic_id
 
-    if (request.body.patient_address != null)
-    {
-        appointmentDetails.patient_address = request.body.patient_address
-        appointmentSchema.patient_address = joi.string().regex(/^(?!.* {2})(?!.*\n{2})([A-Za-z0-9.'\-#@%&/, \n]*)$/).min(8).max(36)
-    }
+    if (request.body.patient_address) appointmentDetails.patient_address = request.body.patient_address
 
-    if (request.body.patient_email_id != null)
-    {
-        appointmentDetails.patient_email_id = request.body.patient_email_id
-        appointmentSchema.patient_email_id = joi.string().email()
-    }
+    if (request.body.patient_email_id) appointmentDetails.patient_email_id = request.body.patient_email_id
 
     const { error } = joi.object(appointmentSchema).custom((value, helpers) => {
 
         const { date, time } = value
-        
+
         if (!validateDateTime(date, time)) {
             return helpers.message('Appointment date and time must be in the future')
         }
@@ -640,31 +555,14 @@ const appointmentDetailsApi = (request, response, next) => {
 
 }
 
-const cancelAppointmentApi = (request, response, next) => {
-
-    const appointmentSchema = joi.object({ appointment_id: joi.number().required() })
-
-    const { error } = appointmentSchema.validate({ appointment_id: request.body.appointment_id })
-
-    if (error) {
-        failResponse(response, {
-            status: false,
-            message: error.details[0].message.includes('is required') ?
-                error.details[0].message : `invalid input in ${error.details[0].message.split(" ")[0]}`
-        })
-    }
-    else { next() }
-}
-
-
-const editAppointmentApi = (request, response, next) => { 
+const editAppointmentApi = (request, response, next) => {
 
     const appointmentSchema = {
-      
         appointment_id: joi.number().required(),
         doctor_id: joi.number().required(),
         branch_id: joi.number().required(),
         robot_id: joi.number().required(),
+        billing_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional(),
         date: customJoi.futureDate().required().label('Appointment-Date'),
         time: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).required().label('Appointment-Time'),
         scan_type: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
@@ -681,20 +579,9 @@ const editAppointmentApi = (request, response, next) => {
         time: request.body.time,
         scan_type: request.body.scan_type,
         differential_diagnosis: request.body.differential_diagnosis,
-    
-    }
-    
-    if (request.body.op_id != null)
-    {
-        appointmentDetails.op_id = request.body.op_id
-        appointmentSchema.op_id =  joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).required()
     }
 
-    if (request.body.billing_id != null)
-    {
-        appointmentDetails.billing_id = request.body.billing_id
-        appointmentSchema.billing_id =  joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).required()
-    }
+    if (request.body.billing_id) appointmentDetails.billing_id = request.body.billing_id
 
     const { error } = joi.object(appointmentSchema).validate(appointmentDetails)
 
@@ -706,8 +593,8 @@ const editAppointmentApi = (request, response, next) => {
         })
     }
     else { next() }
-    
- }
+
+}
 
 
 const listOfHospitalAppointmentsApi = (request, response, next) => {
@@ -727,12 +614,39 @@ const listOfHospitalAppointmentsApi = (request, response, next) => {
 
 }
 
+const rescheduleAppointmentApi = (request, response, next) => {
+
+    const appointmentSchema = joi.object({
+
+        date: customJoi.futureDate().required().label('Appointment-Date'),
+        time: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).required().label('Appointment-Time'),
+        appointment_id: joi.number().required(),
+        doctor_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required()
+    })
+
+    const { error } = appointmentSchema.validate({
+        date: request.body.date,
+        time: request.body.date,
+        appointment_id: request.body.appointment_id,
+        doctor_name: request.body.doctor_name
+    })
+
+    if (error) {
+        failResponse(response, {
+            status: false,
+            message: error.details[0].message.includes('is required') ?
+                error.details[0].message : `invalid input in ${error.details[0].message.split(" ")[0]}`
+        })
+    }
+    else { next() }
+
+}
 
 export default {
     createNewClientApi, createNewUserApi, scanType, department,
     createNewHealthCenterApi, createNewRobotApi, isExistingUserApi,
-    setPasswordApi, loginApi, verifyOptApi, patientDetailsApi, createNewPatientsApi,
-    editPatientDetailsApi, doctorDetailsApi, editDoctorDetailsApi, searchPatientInformationApi,
-    listOfHospitalRobotsApi, createNewAppointmentApi, appointmentDetailsApi, cancelAppointmentApi, editAppointmentApi,
-    listOfHospitalAppointmentsApi
+    setPasswordApi, loginApi, verifyOptApi, createNewPatientsApi,
+    doctorDetailsApi, editDoctorDetailsApi, searchPatientInformationApi,
+    listOfHospitalRobotsApi, createNewAppointmentApi, appointmentDetailsApi, editAppointmentApi,
+    listOfHospitalAppointmentsApi, rescheduleAppointmentApi
 }

@@ -209,10 +209,23 @@ const listOfHospitalAppointmentsApi = async (request, response) => {
     }
 }
 
+const rescheduleAppointmentApi = async (request, response) => {
+    try {
+        const result = await services.rescheduleAppointmentApi(request)
+        if (result) {
+            //write in success-logger database
+            okResponse(response, result)
+        }
+    } catch (error) {
+        // write in fail-logger database
+        failResponse(response, { status: false, message: error })
+    }
+}
 
 
 export default {
     searchPatientInformationApi, listOfScanTypesApi, listOfHospitalDoctorsApi, 
     listOfHealthCenterApi, listOfHospitalRobotsApi, createNewAppointmentApi,
-    appointmentDetailsApi, cancelAppointmentApi, editAppointmentApi, listOfHospitalAppointmentsApi
+    appointmentDetailsApi, cancelAppointmentApi, editAppointmentApi, listOfHospitalAppointmentsApi,
+    rescheduleAppointmentApi
 }
