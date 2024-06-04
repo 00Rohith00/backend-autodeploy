@@ -626,7 +626,7 @@ const rescheduleAppointmentApi = (request, response, next) => {
 
     const { error } = appointmentSchema.validate({
         date: request.body.date,
-        time: request.body.date,
+        time: request.body.time,
         appointment_id: request.body.appointment_id,
         doctor_name: request.body.doctor_name
     })
