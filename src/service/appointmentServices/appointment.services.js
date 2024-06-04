@@ -309,55 +309,64 @@ const createNewAppointmentApi = async (data) => {
 
                 if (data.body.billing_id) {
                     const appointmentDetails = await collections.AppointmentModel.findOne({ billing_id: data.body.billing_id })
-
                     if (appointmentDetails) { throw returnStatement(false, "billing id already exists") }
                 }
 
                 if (!clientDetails.scan_type.includes(data.body.scan_type)) { throw returnStatement(false, "scan type not found") }
 
-                let patientId
+                let patientId = data.body.patient_id
+
+                const patientDetails = {
+                    patient_mobile_number: data.body.patient_mobile_number,
+                    patient_name: data.body.patient_name,
+                    patient_gender: data.body.patient_gender,
+                    patient_age: data.body.patient_age,
+                    patient_pin_code: data.body.patient_pin_code
+                }
+
+                if (data.body.patient_email_id) patientDetails.patient_email_id = data.body.patient_email_id
+                if (data.body.electronic_id) patientDetails.electronic_id = data.body.electronic_id
+                if (data.body.patient_address) patientDetails.patient_address = data.body.patient_address
+
                 if (!data.body.patient_id) {
 
-                    const patientDetails = {
-                        client_id: userDetails.client_id,
-                        patient_mobile_number: data.body.patient_mobile_number,
-                        patient_name: data.body.patient_name,
-                        patient_gender: data.body.patient_gender,
-                        patient_age: data.body.patient_age,
-                        patient_pin_code: data.body.patient_pin_code,
-                        action_required: false,
-                        created_by: data.body.user_id,
-                    }
-
-                    if (data.body.patient_email_id) patientDetails.patient_email_id = data.body.patient_email_id
-                    if (data.body.electronic_id) patientDetails.electronic_id = data.body.electronic_id
-                    if (data.body.patient_address) patientDetails.patient_address = data.body.patient_address
+                    patientDetails.client_id = userDetails.client_id
+                    patientDetails.action_required = false
+                    patientDetails.created_by = data.body.user_id
 
                     if (data.body.op_id) {
                         const isExistingOpId = await collections.PatientModel.findOne({ op_id: data.body.op_id })
-
-                        if (isExistingOpId) {
-                            throw returnStatement(false, "OP-ID is duplicate")
-                        }
+                        if (isExistingOpId) throw returnStatement(false, "OP-ID is duplicate")
                         patientDetails.op_id = data.body.op_id
                     }
 
                     const createPatient = await collections.PatientModel.create(patientDetails)
+
                     if (createPatient._id) patientId = createPatient.patient_id
                     else throw error
                 }
+                else {
 
-                let patientParams = {}
-                if (data.body.op_id) {
-                    patientParams = {
-                        patient_id: data.body.patient_id ? data.body.patient_id : patientId,
-                        op_id: data.body.op_id
+                    const patient = await collections.PatientModel.findOne({ patient_id: patientId, client_id: userDetails.client_id }, { _id: 0 })
+
+                    if (!patient) throw returnStatement(false, "patient id not found")
+
+                    if (data.body.op_id) {
+
+                        if (patient.op_id) {
+
+                            if (patient.op_id != data.body.op_id) {
+                                const patientDetail = await collections.PatientModel.findOne({ op_id: data.body.op_id })
+                                if (patientDetail) throw returnStatement(false, "OP-ID is duplicate")
+                            }
+                            else { patientDetails.op_id = data.body.op_id }
+                        }
+                        patientDetails.op_id = data.body.op_id
                     }
+                    await collections.PatientModel.findOneAndUpdate({ patient_id: data.body.patient_id, client_id: userDetails.client_id },
+                        { $set: patientDetails },
+                        { new: true })
                 }
-                else { patientParams = { patient_id: data.body.patient_id ? data.body.patient_id : patientId } }
-                const patient = await collections.PatientModel.findOne(patientParams, { _id: 0 })
-
-                if (!patient) { throw returnStatement(false, "patient id not found") }
 
                 const doctor = await collections.UserModel.findOne({ user_id: data.body.doctor_id, client_id: userDetails.client_id }, { _id: 0 })
                     .populate({
@@ -373,7 +382,7 @@ const createNewAppointmentApi = async (data) => {
 
                 const appointmentDetails = {
                     client_id: userDetails.client_id,
-                    patient_id: data.body.patient_id ? data.body.patient_id : patientId,
+                    patient_id: patientId,
                     doctor_id: data.body.doctor_id,
                     branch_id: data.body.branch_id,
                     robot_id: data.body.robot_id,
@@ -652,7 +661,22 @@ const editAppointmentApi = async (data) => {
                     differential_diagnosis: data.body.differential_diagnosis
                 }
 
-                if (data.body.billing_id) editAppointmentParams.billing_id = data.body.billing_id
+                if (data.body.billing_id) {
+
+                    if (appointment.billing_id) {
+
+                        if (appointment.billing_id != data.body.billing_id) {
+
+                            const appointmentDetail = await collections.AppointmentModel.findOne({ billing_id: data.body.billing_id })
+                            console.log(appointmentDetail);
+                            if (appointmentDetail) throw returnStatement(false, "OP-ID is duplicate")
+                            editAppointmentParams.billing_id = data.body.billing_id
+                        }
+                        else editAppointmentParams.billing_id = data.body.billing_id
+                    }
+                    else editAppointmentParams.billing_id = data.body.billing_id
+                }
+                else editAppointmentParams.billing_id = data.body.billing_id
 
                 const conferenceInfo = {
                     owner: doctor.user_details.user_name,
