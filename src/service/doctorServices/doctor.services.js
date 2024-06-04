@@ -23,7 +23,7 @@ const listOfDoctorsApi = async (data) => {
 
         const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
 
-        if (userDetails != null && (data.body.role_name === role.admin || data.body.role_name === role.systemAdmin)) {
+        if (userDetails && (data.body.role_name === role.admin || data.body.role_name === role.systemAdmin)) {
 
             const listOfUser = await collections.UserModel.find({
                 client_id: userDetails.client_id,
@@ -43,7 +43,7 @@ const listOfDoctorsApi = async (data) => {
 
             listOfUser.forEach((user) => {
 
-                if (user.user_details.doctor != null) {
+                if (user.user_details.doctor) {
                     listOfDoctors.push({
                         doctor_id: user.user_id,
                         doctor_name: user.user_details.user_name,
@@ -56,12 +56,12 @@ const listOfDoctorsApi = async (data) => {
         }
         else {
             throw returnStatement(false,
-                userDetails == null ? "used id is not found" :
+                !userDetails ? "used id is not found" :
                     `${data.body.role_name} user cannot able to view list of doctors`)
         }
     }
     catch (error) {
-        if (error.status == false && error.message != null) { throw error.message }
+        if (error.status == false && error.message) { throw error.message }
         else { throw error._message ? error._message : "internal server error" }
     }
 }
@@ -83,13 +83,12 @@ const doctorDetailsApi = async (data) => {
                 })
         ])
 
-        if (userDetails != null && doctorDetails != null && (data.body.role_name === role.admin || data.body.role_name === role.systemAdmin)) {
+        if (userDetails && doctorDetails && (data.body.role_name === role.admin || data.body.role_name === role.systemAdmin)) {
 
-            if (userDetails.client_id != doctorDetails.client_id || doctorDetails.user_details.doctor == null ) {
+            if (userDetails.client_id != doctorDetails.client_id || !doctorDetails.user_details.doctor)
                 throw returnStatement(false, "doctor id not found")
-            }
 
-            const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, {_id:0, hospital_name: 1})
+            const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, hospital_name: 1 })
             const details = {
                 doctor_id: data.body.doctor_id,
                 doctor_name: doctorDetails.user_details.user_name,
@@ -107,13 +106,13 @@ const doctorDetailsApi = async (data) => {
         }
         else {
             throw returnStatement(false,
-                userDetails == null ? "used id is not found" :
-                    doctorDetails == null ? "doctor id is not found" :
+                !userDetails ? "used id is not found" :
+                    !doctorDetails ? "doctor id is not found" :
                         `${data.body.role_name} user cannot able to view doctor details`)
         }
     }
     catch (error) {
-        if (error.status == false && error.message != null) { throw error.message }
+        if (error.status == false && error.message) { throw error.message }
         else { throw error._message ? error._message : "internal server error" }
     }
 }
@@ -123,7 +122,7 @@ const listOfDepartmentsApi = async (data) => {
 
         const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
 
-        if (userDetails != null && (data.body.role_name === role.admin || data.body.role_name === role.systemAdmin)) {
+        if (userDetails && (data.body.role_name === role.admin || data.body.role_name === role.systemAdmin)) {
 
             const listOfDepartments = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, department: 1 })
 
@@ -132,16 +131,94 @@ const listOfDepartmentsApi = async (data) => {
         }
         else {
             throw returnStatement(false,
-                userDetails == null ? "used id is not found" :
+                !userDetails ? "used id is not found" :
                     `${data.body.role_name} user cannot able to view list of hospital departments`)
         }
     }
     catch (error) {
-        if (error.status == false && error.message != null) { throw error.message }
+        if (error.status == false && error.message) { throw error.message }
         else { throw error._message ? error._message : "internal server error" }
     }
 }
 
-const editDoctorDetailsApi = async (data) => { }
+const editDoctorDetailsApi = async (data) => {
+
+    try {
+
+        const [userDetails, doctor] = await Promise.all([
+            await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
+            await collections.UserModel.findOne({ user_id: data.body.doctor_id }, { _id: 0, client_id: 1, image_url: 1 })
+                .populate({
+                    path: 'user_details',
+                    select: 'user_name user_email_id user_contact_number user_age user_gender -_id user_location',
+                    populate: {
+                        path: 'doctor',
+                        select: '-_id doctor_department doctor_registration_id mbbs_completed_year time_from time_to'
+                    }
+                })
+        ])
+
+        if (userDetails && doctor && (data.body.role_name === role.admin)) {
+
+            if (userDetails.client_id != doctor.client_id || !doctor.user_details.doctor) throw returnStatement(false, "doctor id not found")
+
+            if (doctor.user_details.user_email_id != data.body.user_email_id) {
+                const isExisting = await collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id })
+                if (isExisting) throw returnStatement(false, "email id already exists")
+            }
+
+            if (doctor.user_details.doctor.doctor_registration_id != data.body.doctor_registration_id) {
+                const isExisting = await collections.DoctorModel.findOne({ doctor_registration_id: data.body.doctor_registration_id })
+                if (isExisting) throw returnStatement(false, "doctor registration id is already exists")
+            }
+
+            const doctorParams = {
+                doctor_registration_id: request.body.doctor_registration_id,
+                mbbs_completed_year: request.body.mbbs_completed_year,
+                doctor_department: request.body.doctor_department,
+            }
+
+            if(data.body.date) doctorParams.date = data.body.date 
+            if(data.body.time) doctorParams.date = data.body.time 
+            
+            const userDetailsParams = {
+                user_name: request.body.user_name,
+                user_email_id: request.body.user_email_id,
+                user_contact_number: request.body.user_contact_number,
+                user_location: request.body.user_location,
+                user_pin_code: request.body.user_pin_code,
+                user_age: request.body.user_age,
+                user_gender: request.body.user_gender,
+            }
+
+            await Promise.all([
+                await collections.DoctorModel.findOneAndUpdate({ doctor_registration_id: doctor.user_details.doctor.doctor_registration_id },
+                    { $set: doctorParams },
+                    { new: true }),
+
+                await collections.UserDetailModel.findOneAndUpdate({ user_email_id: doctor.user_details.user_email_id },
+                    { $set: userDetailsParams },
+                    { new: true }),
+
+                await collections.UserModel.findOneAndUpdate({ user_id: data.body.doctor_id },
+                    { $set: { image_url: request.body.image_url } },
+                    { new: true }),
+            ])
+            
+            return returnStatement(true, "doctor's detail is updated")
+        }
+        else {
+            throw returnStatement(false,
+                !userDetails ? "used id is not found" :
+                    !doctorDetails ? "doctor id is not found" :
+                        `${data.body.role_name} can't able to edit doctor details`)
+        }
+    }
+    catch (error) {
+        if (error.status == false && error.message) { throw error.message }
+        else { throw "internal server error" }
+    }
+
+}
 
 export default { listOfDoctorsApi, doctorDetailsApi, editDoctorDetailsApi, listOfDepartmentsApi }

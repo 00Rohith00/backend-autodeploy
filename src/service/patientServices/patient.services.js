@@ -151,8 +151,7 @@ const editPatientDetailsApi = async (data) => {
                 patient_name: data.body.patient_name,
                 patient_gender: data.body.patient_gender,
                 patient_age: data.body.patient_age,
-                patient_pin_code: data.body.patient_pin_code,
-                created_by: data.body.user_id
+                patient_pin_code: data.body.patient_pin_code
             }
 
             if(data.body.electronic_id) patientDetails.electronic_id = data.body.electronic_id

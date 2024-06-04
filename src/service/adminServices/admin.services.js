@@ -162,10 +162,12 @@ const createNewDoctorApi = async (data) => {
         doctor_registration_id: data.body.doctor_registration_id,
         mbbs_completed_year: data.body.mbbs_completed_year,
         doctor_department: data.body.doctor_department,
-        time_from: data.body.time_from,
-        time_to: data.body.time_to,
-        is_approved: data.body.is_approved
+        is_approved: true                               // write a cron job for doctor verification
       }
+
+      if (data.body.time_from) doctorDetails.time_from = data.body.time_from
+      if (data.body.time_to) doctorDetails.time_from = data.body.time_to
+
       const doctorDetailsCollection = await collections.DoctorModel.create(doctorDetails)
 
       if (doctorDetailsCollection._id) {
@@ -228,7 +230,7 @@ const createNewDoctorApi = async (data) => {
   }
   catch (error) {
     rollBack(doctorRollBackPrams)
-    if (error.status == false && error.message ) { throw error.message }
+    if (error.status == false && error.message) { throw error.message }
     else { throw error._message ? error._message : "internal server error" }
   }
 }

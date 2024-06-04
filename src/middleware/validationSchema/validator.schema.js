@@ -100,16 +100,14 @@ const createNewUserApi = (request, response, next) => {
             doctor_registration_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).required(),
             mbbs_completed_year: joi.number().integer().min(1900).max(new Date().getFullYear()).required(),
             doctor_department: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
-            is_approved: joi.boolean().required(),
-            time_from: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).required(),
-            time_to: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).required()
+            time_from: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).optional(),
+            time_to: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).optional()
         }
 
         const doctorDetails = {
             doctor_registration_id: request.body.doctor_registration_id,
             mbbs_completed_year: request.body.mbbs_completed_year,
             doctor_department: request.body.doctor_department,
-            is_approved: request.body.is_approved,
         }
 
         if (request.body.time_from) doctorDetails.time_from = request.body.time_from
@@ -412,12 +410,65 @@ const doctorDetailsApi = (request, response, next) => {
     else { next() }
 
 }
-const editDoctorDetailsApi = (request, response, next) => { next() }
+const editDoctorDetailsApi = (request, response, next) => {
+
+    let validationConditions = {
+
+        doctor_id : joi.number().required(),
+        user_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
+        user_email_id: joi.string().email().required(),
+        user_contact_number: joi.string().regex(/^\d{10}$/).required(),
+        user_location: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)?$/).min(3).max(20).required(),
+        user_pin_code: joi.number().required(),
+        user_age: joi.number().min(1).max(110).required(),
+        image_url: joi.string().uri().required(),
+        doctor_registration_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).required(),
+        mbbs_completed_year: joi.number().integer().min(1900).max(new Date().getFullYear()).required(),
+        doctor_department: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
+        time_from: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).optional(),
+        time_to: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).optional()
+    }
+
+    if (!(request.body.user_gender == 'male' || request.body.user_gender == 'female')) {
+        failResponse(response, { status: false, message: "invalid gender name" })
+    }
+
+    const doctorDetails = {
+
+        doctor_id: request.body.doctor_id,
+        user_name: request.body.user_name,
+        user_email_id: request.body.user_email_id,
+        user_contact_number: request.body.user_contact_number,
+        user_location: request.body.user_location,
+        user_pin_code: request.body.user_pin_code,
+        image_url: request.body.image_url,
+        user_age: request.body.user_age,
+        doctor_registration_id: request.body.doctor_registration_id,
+        mbbs_completed_year: request.body.mbbs_completed_year,
+        doctor_department: request.body.doctor_department,
+    }
+
+    if (request.body.time_from) doctorDetails.time_from = request.body.time_from
+
+    if (request.body.time_to) doctorDetails.time_to = request.body.time_to
+
+    const { error } = joi.object(validationConditions).validate(doctorDetails)
+
+    if (error) {
+        failResponse(response, {
+            status: false,
+            message: error.details[0].message.includes('is required') ?
+                error.details[0].message : `invalid input in ${error.details[0].message.split(" ")[0]}`
+        })
+    }
+    else { next() }
+
+}
 
 
 // appointment module:
 
-const searchPatientInformationApi = (request, response, next) => { 
+const searchPatientInformationApi = (request, response, next) => {
 
     const { error } = joi.object({ phone_number: joi.string().regex(/^\d{10}$/).required() }).validate({ phone_number: request.body.patient_mobile_number })
 
@@ -430,7 +481,7 @@ const searchPatientInformationApi = (request, response, next) => {
     }
     else { next() }
 }
- 
+
 
 const listOfHospitalRobotsApi = (request, response, next) => {
 

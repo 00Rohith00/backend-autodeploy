@@ -647,8 +647,7 @@ const editAppointmentApi = async (data) => {
                     date: data.body.date,
                     time: data.body.time,
                     scan_type: data.body.scan_type,
-                    differential_diagnosis: data.body.differential_diagnosis,
-                    created_by: data.body.user_id
+                    differential_diagnosis: data.body.differential_diagnosis
                 }
 
                 if (data.body.billing_id) editAppointmentParams.billing_id = data.body.billing_id
