@@ -41,7 +41,9 @@ const searchPatientInformationApi = async (data) => {
                         electronic_id: 1, _id: 0
                     })
 
-            return returnStatement(true, "list of patient's details ", patientInformation)
+            if (patientInformation.length == 0) throw returnStatement(false, "patient not found")
+
+            return returnStatement(true, "list of patient's details", patientInformation)
         }
         else {
             throw returnStatement(false,
@@ -297,10 +299,10 @@ const createNewAppointmentApi = async (data) => {
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
             const [doctorDetails, branchDetails, robotDetails, clientDetails] = await Promise.all([
-                await collections.UserModel.findOne({ user_id: data.body.doctor_id, client_id: userDetails.client_id }),
-                await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: userDetails.client_id }),
-                await collections.RobotModel.findOne({ robot_id: data.body.robot_id, branch_id: data.body.branch_id }),
-                await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, scan_type: 1 })
+                collections.UserModel.findOne({ user_id: data.body.doctor_id, client_id: userDetails.client_id }),
+                collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: userDetails.client_id }),
+                collections.RobotModel.findOne({ robot_id: data.body.robot_id, branch_id: data.body.branch_id }),
+                collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, scan_type: 1 })
             ])
 
             if (doctorDetails && branchDetails && robotDetails && clientDetails) {
@@ -560,7 +562,7 @@ const appointmentDetailsApi = async (data) => {
 
             const [patientId, doctorName, robotDetails, branch] = await Promise.all([
 
-                await collections.PatientModel
+                collections.PatientModel
                     .findOne({ patient_id: appointmentDetails.patient_id },
                         {
                             _id: 0, patient_name: 1, patient_email_id: 1,
@@ -568,17 +570,17 @@ const appointmentDetailsApi = async (data) => {
                             patient_pin_code: 1, electronic_id: 1, patient_address: 1
                         }),
 
-                await collections.UserModel
+                collections.UserModel
                     .findOne({ user_id: appointmentDetails.doctor_id }, { user_details: 1, _id: 0 })
                     .populate({
                         path: 'user_details',
                         select: '-_id user_name',
                     }),
 
-                await collections.RobotModel
+                collections.RobotModel
                     .findOne({ robot_id: appointmentDetails.robot_id, branch_id: appointmentDetails.branch_id }, { robot_registration_id: 1, _id: 0 }),
 
-                await collections.HealthCenterModel
+                collections.HealthCenterModel
                     .findOne({ branch_id: appointmentDetails.branch_id }, { branch_name: 1, _id: 0 })
             ])
 
@@ -623,15 +625,15 @@ const editAppointmentApi = async (data) => {
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
             const [branch, doctor, client, robot, appointment] = await Promise.all([
-                await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: userDetails.client_id }),
-                await collections.UserModel.findOne({ user_id: data.body.doctor_id, client_id: userDetails.client_id }, { user_details: 1, _id: 0 })
+                collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: userDetails.client_id }),
+                collections.UserModel.findOne({ user_id: data.body.doctor_id, client_id: userDetails.client_id }, { user_details: 1, _id: 0 })
                     .populate({
                         path: 'user_details',
                         select: '-_id user_name',
                     }),
-                await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, scan_type: 1 }),
-                await collections.RobotModel.findOne({ robot_id: data.body.robot_id, branch_id: data.body.branch_id }),
-                await collections.AppointmentModel.findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id })
+                collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, scan_type: 1 }),
+                collections.RobotModel.findOne({ robot_id: data.body.robot_id, branch_id: data.body.branch_id }),
+                collections.AppointmentModel.findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id })
             ])
 
             if (branch && doctor && client['scan_type'].includes(data.body.scan_type) && robot && appointment) {

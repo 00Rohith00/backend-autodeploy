@@ -31,8 +31,8 @@ const createNewSystemAdminApi = async (data) => {
   try {
     // Fetching necessary details from different collections
     const [adminDetails, isEmailExist] = await Promise.all([
-      await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
-      await collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id })
+      collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
+      collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id })
     ])
 
     const healthCenterDetails = await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: adminDetails.client_id })
@@ -151,9 +151,9 @@ const createNewDoctorApi = async (data) => {
   try {
 
     const [adminDetails, doctorCollection, isEmailExist] = await Promise.all([
-      await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
-      await collections.DoctorModel.findOne({ doctor_registration_id: data.body.doctor_registration_id }),
-      await collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id })
+      collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
+      collections.DoctorModel.findOne({ doctor_registration_id: data.body.doctor_registration_id }),
+      collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id })
     ])
 
     if (adminDetails && !doctorCollection && !isEmailExist && data.body.role_name === role.admin) {
@@ -166,7 +166,7 @@ const createNewDoctorApi = async (data) => {
       }
 
       if (data.body.time_from) doctorDetails.time_from = data.body.time_from
-      if (data.body.time_to) doctorDetails.time_from = data.body.time_to
+      if (data.body.time_to) doctorDetails.time_to = data.body.time_to
 
       const doctorDetailsCollection = await collections.DoctorModel.create(doctorDetails)
 

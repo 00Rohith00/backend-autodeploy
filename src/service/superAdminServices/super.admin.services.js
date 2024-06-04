@@ -30,8 +30,8 @@ const createNewAdminApi = async (data) => {
     try {
 
         const [superAdminDetails, isExistingEmailId] = await Promise.all([
-            await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
-            await collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id })
+            collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
+            collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id })
         ])
 
         if (superAdminDetails && !isExistingEmailId && data.body.role_name === role.superAdmin) {
@@ -103,8 +103,8 @@ const createNewAdminApi = async (data) => {
     }
     catch (error) {
         rollBack(adminRollBackParams)
-        if (error.status == false && error.message ) { throw error.message }
-        else { throw  error._message ?  error._message : "internal server error" }
+        if (error.status == false && error.message) { throw error.message }
+        else { throw error._message ? error._message : "internal server error" }
     }
 }
 
@@ -160,8 +160,8 @@ const createNewHealthCenterApi = async (data) => {
         }
     }
     catch (error) {
-        if (error.status == false && error.message ) { throw error.message }
-        else { throw  error._message ?  error._message : "internal server error" }
+        if (error.status == false && error.message) { throw error.message }
+        else { throw error._message ? error._message : "internal server error" }
     }
 }
 
@@ -188,12 +188,12 @@ const createNewRobotApi = async (data) => {
 
     try {
         const [superAdminDetails, robotCollection] = await Promise.all([
-            await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
-            await collections.RobotModel.findOne({ robot_registration_id: data.body.robot_registration_id })
+            collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
+            collections.RobotModel.findOne({ robot_registration_id: data.body.robot_registration_id })
         ])
 
         const healthCenterDetails = await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: superAdminDetails.client_id })
-        
+
         if (superAdminDetails && healthCenterDetails && !robotCollection && data.body.role_name === role.superAdmin) {
 
             const robotDetails = {
@@ -219,8 +219,8 @@ const createNewRobotApi = async (data) => {
         }
     }
     catch (error) {
-        if (error.status == false && error.message ) { throw error.message }
-        else { throw  error._message ?  error._message : "internal server error" }
+        if (error.status == false && error.message) { throw error.message }
+        else { throw error._message ? error._message : "internal server error" }
     }
 }
 
@@ -253,8 +253,8 @@ const addNewScanApi = async (data) => {
         }
     }
     catch (error) {
-        if (error.status == false && error.message ) { throw error.message }
-        else { throw  error._message ?  error._message : "internal server error" }
+        if (error.status == false && error.message) { throw error.message }
+        else { throw error._message ? error._message : "internal server error" }
     }
 }
 
@@ -289,10 +289,10 @@ const deleteScanApi = async (data) => {
     }
     catch (error) {
         // error.message is "user id is not found"
-        if (error.status == false && error.message ) {
+        if (error.status == false && error.message) {
             throw error.message
         }
-        else { throw  error._message ?  error._message : "internal server error" }
+        else { throw error._message ? error._message : "internal server error" }
     }
 }
 
@@ -324,8 +324,8 @@ const addNewDepartmentApi = async (data) => {
         }
     }
     catch (error) {
-        if (error.status == false && error.message ) { throw error.message }
-        else { throw  error._message ?  error._message : "internal server error" }
+        if (error.status == false && error.message) { throw error.message }
+        else { throw error._message ? error._message : "internal server error" }
     }
 }
 const deleteDepartmentApi = async (data) => {
@@ -358,10 +358,10 @@ const deleteDepartmentApi = async (data) => {
     }
     catch (error) {
         // error.message is "user id is not found"
-        if (error.status == false && error.message ) {
+        if (error.status == false && error.message) {
             throw error.message
         }
-        else { throw  error._message ?  error._message : "internal server error" }
+        else { throw error._message ? error._message : "internal server error" }
     }
 }
 
@@ -369,4 +369,3 @@ export default {
     createNewAdminApi, createNewHealthCenterApi, createNewRobotApi,
     addNewScanApi, deleteScanApi, addNewDepartmentApi, deleteDepartmentApi
 }
-

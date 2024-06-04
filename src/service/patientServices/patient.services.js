@@ -43,17 +43,17 @@ const createNewPatientsApi = async (data) => {
                 created_by: data.body.user_id
             }
 
-            if(data.body.electronic_id) patientDetails.electronic_id = data.body.electronic_id
-            if(data.body.patient_address) patientDetails.patient_address = data.body.patient_address
+            if (data.body.electronic_id) patientDetails.electronic_id = data.body.electronic_id
+            if (data.body.patient_address) patientDetails.patient_address = data.body.patient_address
             if (data.body.patient_email_id) patientDetails.patient_email_id = data.body.patient_email_id
-            
+
             if (data.body.op_id) {
-                const patientDetail = await collections.PatientModel.findOne({ op_id: data.body.op_id, client_id: userDetails.client_id })
+                const patientDetail = await collections.PatientModel.findOne({ op_id: data.body.op_id })
 
                 if (patientDetail) {
                     throw returnStatement(false, "OP-ID is duplicate")
                 }
-                patientDetails.op_id = data.body.op_id  
+                patientDetails.op_id = data.body.op_id
             }
 
             const patientDetailsCollection = await collections.PatientModel.create(patientDetails)
@@ -69,7 +69,7 @@ const createNewPatientsApi = async (data) => {
     }
     catch (error) {
         if (error.status == false && error.message) { throw error.message }
-        else { throw  error._message ?  error._message : "internal server error" }
+        else { throw error._message ? error._message : "internal server error" }
     }
 }
 
@@ -99,8 +99,9 @@ const listOfPatientsApi = async (data) => {
 
             const listOfPatients = await collections.PatientModel.find(
                 { client_id: userDetails.client_id },
-                { patient_id: 1, patient_name: 1, patient_email_id: 1, patient_mobile_number: 1, _id: 0,
-                  patient_gender: 1, patient_age: 1, electronic_id: 1, patient_pin_code: 1, patient_address: 1, op_id: 1
+                {
+                    patient_id: 1, patient_name: 1, patient_email_id: 1, patient_mobile_number: 1, _id: 0,
+                    patient_gender: 1, patient_age: 1, electronic_id: 1, patient_pin_code: 1, patient_address: 1, op_id: 1
                 }
             )
             return returnStatement(true, "list of patients", listOfPatients)
@@ -113,7 +114,7 @@ const listOfPatientsApi = async (data) => {
     }
     catch (error) {
         if (error.status == false && error.message) { throw error.message }
-        else { throw  error._message ?  error._message : "internal server error" }
+        else { throw error._message ? error._message : "internal server error" }
     }
 }
 
@@ -140,13 +141,13 @@ const listOfPatientsApi = async (data) => {
 const editPatientDetailsApi = async (data) => {
     try {
         const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
-        
-        const patient = await collections.UserModel.findOne({ patient_id: data.body.patient_id, client_id: userDetails.client_id })
+
+        const patient = await collections.PatientModel.findOne({ patient_id: data.body.patient_id, client_id: userDetails.client_id })
 
         if (userDetails && patient && (data.body.role_name === role.admin || data.body.role_name === role.systemAdmin)) {
 
 
-        const patientDetails = {
+            const patientDetails = {
                 patient_mobile_number: data.body.patient_mobile_number,
                 patient_name: data.body.patient_name,
                 patient_gender: data.body.patient_gender,
@@ -154,17 +155,18 @@ const editPatientDetailsApi = async (data) => {
                 patient_pin_code: data.body.patient_pin_code
             }
 
-            if(data.body.electronic_id) patientDetails.electronic_id = data.body.electronic_id
-            if(data.body.patient_address) patientDetails.patient_address = data.body.patient_address
+            if (data.body.electronic_id) patientDetails.electronic_id = data.body.electronic_id
+            if (data.body.patient_address) patientDetails.patient_address = data.body.patient_address
             if (data.body.patient_email_id) patientDetails.patient_email_id = data.body.patient_email_id
-            
-            if (data.body.op_id) {
-                const patientDetail = await collections.PatientModel.findOne({ op_id: data.body.op_id, client_id: userDetails.client_id })
 
-                if (patientDetail) {
-                    throw returnStatement(false, "OP-ID is duplicate")
+            if (data.body.op_id) {
+
+                if (patient.op_id && patient.op_id != data.body.op_id) {
+                    const patientDetail = await collections.PatientModel.findOne({ op_id: data.body.op_id })
+                    if (patientDetail) throw returnStatement(false, "OP-ID is duplicate")
+                    patientDetails.op_id = data.body.op_id
                 }
-                patientDetails.op_id = data.body.op_id  
+                patientDetails.op_id = data.body.op_id
             }
 
             await collections.PatientModel.findOneAndUpdate({ patient_id: data.body.patient_id },
@@ -176,8 +178,8 @@ const editPatientDetailsApi = async (data) => {
         else {
             throw returnStatement(false,
                 !userDetails ? "used id is not found" :
-                !patient ? "patient id is not found" :
-                    `${data.body.role_name} can't able to edit patients details`)
+                    !patient ? "patient id is not found" :
+                        `${data.body.role_name} can't able to edit patients details`)
         }
     }
     catch (error) {

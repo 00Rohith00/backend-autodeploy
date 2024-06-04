@@ -195,12 +195,12 @@ const sendOtpApi = async (data) => {
     if (!isExistingEmailId) throw returnStatement(false, "email id not found")
 
     const [loginObjectId, otpCollection] = await Promise.all([
-      await collections.UserModel.findOne({ user_details: isExistingEmailId._id }, { _id: 0 })
+      collections.UserModel.findOne({ user_details: isExistingEmailId._id }, { _id: 0 })
         .populate({
           path: 'user_login',
           select: 'update_count -_id',
         }),
-      await collections.OtpModel.findOne({ user_email_id: data.body.user_email_id })
+      collections.OtpModel.findOne({ user_email_id: data.body.user_email_id })
     ])
 
     if (!loginObjectId.user_login.update_count) { throw returnStatement(false, "this email id didn't set password yet") }
@@ -246,8 +246,8 @@ const verifyOtpApi = async (data) => {
   try {
 
     const [isExistingEmailId, otpCollection] = await Promise.all([
-      await collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id }),
-      await collections.OtpModel.findOne({ user_email_id: data.body.user_email_id })
+      collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id }),
+      collections.OtpModel.findOne({ user_email_id: data.body.user_email_id })
     ])
 
     if (isExistingEmailId && otpCollection) {

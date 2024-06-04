@@ -71,8 +71,8 @@ const doctorDetailsApi = async (data) => {
     try {
 
         const [userDetails, doctorDetails] = await Promise.all([
-            await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
-            await collections.UserModel.findOne({ user_id: data.body.doctor_id }, { _id: 0, client_id: 1, image_url: 1 })
+            collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
+            collections.UserModel.findOne({ user_id: data.body.doctor_id }, { _id: 0, client_id: 1, image_url: 1 })
                 .populate({
                     path: 'user_details',
                     select: 'user_name user_email_id user_contact_number user_age user_gender -_id user_location',
@@ -146,8 +146,8 @@ const editDoctorDetailsApi = async (data) => {
     try {
 
         const [userDetails, doctor] = await Promise.all([
-            await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
-            await collections.UserModel.findOne({ user_id: data.body.doctor_id }, { _id: 0, client_id: 1, image_url: 1 })
+            collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
+            collections.UserModel.findOne({ user_id: data.body.doctor_id }, { _id: 0, client_id: 1, image_url: 1 })
                 .populate({
                     path: 'user_details',
                     select: 'user_name user_email_id user_contact_number user_age user_gender -_id user_location',
@@ -173,44 +173,44 @@ const editDoctorDetailsApi = async (data) => {
             }
 
             const doctorParams = {
-                doctor_registration_id: request.body.doctor_registration_id,
-                mbbs_completed_year: request.body.mbbs_completed_year,
-                doctor_department: request.body.doctor_department,
+                doctor_registration_id: data.body.doctor_registration_id,
+                mbbs_completed_year: data.body.mbbs_completed_year,
+                doctor_department: data.body.doctor_department,
             }
 
-            if(data.body.date) doctorParams.date = data.body.date 
-            if(data.body.time) doctorParams.date = data.body.time 
-            
+            if (data.body.date) doctorParams.date = data.body.date
+            if (data.body.time) doctorParams.date = data.body.time
+
             const userDetailsParams = {
-                user_name: request.body.user_name,
-                user_email_id: request.body.user_email_id,
-                user_contact_number: request.body.user_contact_number,
-                user_location: request.body.user_location,
-                user_pin_code: request.body.user_pin_code,
-                user_age: request.body.user_age,
-                user_gender: request.body.user_gender,
+                user_name: data.body.user_name,
+                user_email_id: data.body.user_email_id,
+                user_contact_number: data.body.user_contact_number,
+                user_location: data.body.user_location,
+                user_pin_code: data.body.user_pin_code,
+                user_age: data.body.user_age,
+                user_gender: data.body.user_gender,
             }
 
             await Promise.all([
-                await collections.DoctorModel.findOneAndUpdate({ doctor_registration_id: doctor.user_details.doctor.doctor_registration_id },
+                collections.DoctorModel.findOneAndUpdate({ doctor_registration_id: doctor.user_details.doctor.doctor_registration_id },
                     { $set: doctorParams },
                     { new: true }),
 
-                await collections.UserDetailModel.findOneAndUpdate({ user_email_id: doctor.user_details.user_email_id },
+                collections.UserDetailModel.findOneAndUpdate({ user_email_id: doctor.user_details.user_email_id },
                     { $set: userDetailsParams },
                     { new: true }),
 
-                await collections.UserModel.findOneAndUpdate({ user_id: data.body.doctor_id },
-                    { $set: { image_url: request.body.image_url } },
+                collections.UserModel.findOneAndUpdate({ user_id: data.body.doctor_id },
+                    { $set: { image_url: data.body.image_url } },
                     { new: true }),
             ])
-            
+
             return returnStatement(true, "doctor's detail is updated")
         }
         else {
             throw returnStatement(false,
                 !userDetails ? "used id is not found" :
-                    !doctorDetails ? "doctor id is not found" :
+                    !doctor ? "doctor id is not found" :
                         `${data.body.role_name} can't able to edit doctor details`)
         }
     }
