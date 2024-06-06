@@ -354,17 +354,17 @@ const verifyOptApi = (request, response, next) => {
  * @return {void} Calls the next middleware function if the request body is valid, otherwise sends a fail response.
  */
 const createNewPatientsApi = (request, response, next) => {
-    const patientSchema = joi.object(
-        {
-            op_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional(),
-            patient_mobile_number: joi.string().regex(/^\d{10}$/).required(),
-            patient_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
-            patient_email_id: joi.string().email().optional(),
-            patient_age: joi.number().required(),
-            patient_pin_code: joi.number().required(),
-            patient_address: joi.string().regex(/^(?!.* {2})(?!.*\n{2})([A-Za-z0-9.'\-#@%&/, \n]*)$/).min(8).max(36).optional(),
-            electronic_id: joi.string().trim().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional()
-        })
+
+    const patientValidation = {
+        op_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional(),
+        patient_mobile_number: joi.string().regex(/^\d{10}$/).required(),
+        patient_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
+        patient_email_id: joi.string().email().optional(),
+        patient_age: joi.number().required(),
+        patient_pin_code: joi.number().required(),
+        patient_address: joi.string().regex(/^(?!.* {2})(?!.*\n{2})([A-Za-z0-9.'\-#@%&/, \n]*)$/).min(8).max(36).optional(),
+        electronic_id: joi.string().trim().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional()
+    }
 
     if (!(request.body.patient_gender == 'male' || request.body.patient_gender == 'female'))
         failResponse(response, { status: false, message: "invalid gender name" })
@@ -381,11 +381,13 @@ const createNewPatientsApi = (request, response, next) => {
     if (request.body.patient_address) patientDetails.patient_address = request.body.patient_address
     if (request.body.patient_email_id) patientDetails.patient_email_id = request.body.patient_email_id
 
-    if (request.route.path.includes('/edit-patient')) {
+    if (request.route.path.includes('/edit-patient-details')) {
 
+        patientValidation.patient_id = joi.number().required()
         patientDetails.patient_id = request.body.patient_id
-        patientSchema.patient_id = joi.number().required()
     }
+
+    const patientSchema = joi.object(patientValidation)
 
     const { error } = patientSchema.validate(patientDetails)
     if (error) {
