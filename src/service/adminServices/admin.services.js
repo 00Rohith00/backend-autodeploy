@@ -158,6 +158,10 @@ const createNewDoctorApi = async (data) => {
 
     if (adminDetails && !doctorCollection && !isEmailExist && data.body.role_name === role.admin) {
 
+      const client  = await collections.HospitalClientModel.findOne({ client_id: adminDetails.client_id })
+
+      if(!client['department'].includes(data.body.doctor_department)) throw returnStatement(false, "department not found")
+
       const doctorDetails = {
         doctor_registration_id: data.body.doctor_registration_id,
         mbbs_completed_year: data.body.mbbs_completed_year,

@@ -219,7 +219,7 @@ const appointmentSchema = new mongoose.Schema({
     appointment_id: { type: Number, unique: true },
     client_id: { type: Number, required: true },
     op_id: { type: String },
-    billing_id: { type: String, unique: true, sparse: true},
+    billing_id: { type: String },
     patient_id: { type: Number, required: true },
     doctor_id: { type: Number, required: true },
     branch_id: { type: Number, required: true },
@@ -371,7 +371,7 @@ const EmergencyAppointmentModel = mongoose.model("emergency_appointment", emerge
 const patientSchema = new mongoose.Schema({
     patient_id: { type: Number, unique: true },
     client_id: { type: Number, required: true },
-    op_id: { type: String, unique: true, sparse: true },
+    op_id: { type: String },
     patient_mobile_number: { type: Number, required: true },
     patient_name: { type: String, required: true },
     patient_email_id: { type: String },

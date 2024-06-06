@@ -381,6 +381,12 @@ const createNewPatientsApi = (request, response, next) => {
     if (request.body.patient_address) patientDetails.patient_address = request.body.patient_address
     if (request.body.patient_email_id) patientDetails.patient_email_id = request.body.patient_email_id
 
+    if (request.route.path.includes('/edit-patient')) {
+
+        patientDetails.patient_id = request.body.patient_id
+        patientSchema.patient_id = joi.number().required()
+    }
+
     const { error } = patientSchema.validate(patientDetails)
     if (error) {
         failResponse(response, {

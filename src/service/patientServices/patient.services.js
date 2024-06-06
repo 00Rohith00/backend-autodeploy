@@ -48,8 +48,8 @@ const createNewPatientsApi = async (data) => {
             if (data.body.patient_email_id) patientDetails.patient_email_id = data.body.patient_email_id
 
             if (data.body.op_id) {
-                const patientDetail = await collections.PatientModel.findOne({ op_id: data.body.op_id })
-
+                
+                const patientDetail = await collections.PatientModel.findOne({ op_id: data.body.op_id, client_id: userDetails.client_id })
                 if (patientDetail) {
                     throw returnStatement(false, "OP-ID is duplicate")
                 }
@@ -161,12 +161,12 @@ const editPatientDetailsApi = async (data) => {
 
             if (data.body.op_id) {
 
-                if (patient.op_id && patient.op_id != data.body.op_id) {
-                    const patientDetail = await collections.PatientModel.findOne({ op_id: data.body.op_id })
+                if ((!patient.op_id || patient.op_id != data.body.op_id)) {
+
+                    const patientDetail = await collections.PatientModel.findOne({ op_id: data.body.op_id, client_id: userDetails.client_id })
                     if (patientDetail) throw returnStatement(false, "OP-ID is duplicate")
                     patientDetails.op_id = data.body.op_id
                 }
-                patientDetails.op_id = data.body.op_id
             }
 
             await collections.PatientModel.findOneAndUpdate({ patient_id: data.body.patient_id },

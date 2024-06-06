@@ -75,7 +75,7 @@ const doctorDetailsApi = async (data) => {
             collections.UserModel.findOne({ user_id: data.body.doctor_id }, { _id: 0, client_id: 1, image_url: 1 })
                 .populate({
                     path: 'user_details',
-                    select: 'user_name user_email_id user_contact_number user_age user_gender -_id user_location',
+                    select: 'user_name user_email_id user_contact_number user_age user_gender -_id user_location user_pin_code',
                     populate: {
                         path: 'doctor',
                         select: '-_id doctor_department doctor_registration_id mbbs_completed_year time_from time_to'
@@ -98,6 +98,7 @@ const doctorDetailsApi = async (data) => {
                 gender: doctorDetails.user_details.user_gender,
                 hospital_name: clientDetails.hospital_name,
                 location: doctorDetails.user_details.user_location,
+                pin_code: doctorDetails.user_details.user_pin_code,
                 image_url: doctorDetails.image_url,
                 ...doctorDetails.user_details.doctor._doc
             }
@@ -171,6 +172,10 @@ const editDoctorDetailsApi = async (data) => {
                 const isExisting = await collections.DoctorModel.findOne({ doctor_registration_id: data.body.doctor_registration_id })
                 if (isExisting) throw returnStatement(false, "doctor registration id is already exists")
             }
+           
+            const client = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id })
+
+            if(!client['department'].includes(data.body.doctor_department)) throw returnStatement(false, "department not found")
 
             const doctorParams = {
                 doctor_registration_id: data.body.doctor_registration_id,
@@ -178,8 +183,8 @@ const editDoctorDetailsApi = async (data) => {
                 doctor_department: data.body.doctor_department,
             }
 
-            if (data.body.date) doctorParams.date = data.body.date
-            if (data.body.time) doctorParams.date = data.body.time
+            if (data.body.time_from) doctorParams.time_from = data.body.time_from
+            if (data.body.time_to) doctorParams.time_to = data.body.time_to
 
             const userDetailsParams = {
                 user_name: data.body.user_name,
