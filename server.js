@@ -26,7 +26,7 @@ application.use(cors())
 
 // Parse URL-encoded and JSON bodies
 application.use(express.urlencoded({ extended: true }))
-application.use(express.json())
+application.use(express.json({ limit: '10mb' }))
 
 /**
  * Middleware to limit API requests.

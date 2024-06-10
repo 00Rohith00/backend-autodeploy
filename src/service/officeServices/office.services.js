@@ -26,6 +26,7 @@ import { returnStatement } from "../../utils/return.handler.js"
  * @throws {Error} If the client is not created, an empty error is thrown.
  */
 
+
 const createNewClientApi = async (data) => {
 
     try {
@@ -35,22 +36,43 @@ const createNewClientApi = async (data) => {
             domain_url: data.body.domain_url
         }
 
-        if (data.body.scan_type) clientDetails.scan_type = data.body.scan_type 
-        if (data.body.department) clientDetails.department = data.body.department 
+        if (data.body.scan_type) {
+
+            let scanType = []
+            data.body.scan_type.forEach((scan, index) => {
+                scanType.push({
+                    id: Date.now() + index,
+                    scan_type: scan
+                })
+            })
+            clientDetails.scan_type = scanType
+        }
+
+        if (data.body.department) {
+
+            let departmentName = []
+            data.body.department.forEach((department, index) => {
+                departmentName.push({
+                    id: Date.now() + `${index}`,
+                    department: department
+                })
+            })
+            clientDetails.department = departmentName
+        }
 
         const isExistingHospitalName = await collections.HospitalClientModel.findOne({ hospital_name: data.body.hospital_name })
 
         if (isExistingHospitalName) throw returnStatement(false, 'hospital name is already exist')
-        
+
         const createNewClient = await collections.HospitalClientModel.create(clientDetails)
 
         if (!createNewClient._id) { throw error }
-        
+
         return returnStatement(true, "hospital client is created")
     }
-    catch (error) {     
+    catch (error) {
         if (error.status == false && error.message) { throw error.message }
-        else { throw  error._message ?  error._message : "internal server error" }
+        else { throw error._message ? error._message : "internal server error" }
     }
 }
 
@@ -162,7 +184,7 @@ const createNewSuperAdminApi = async (data) => {
     catch (error) {
         rollBack(superAdminRollBackParams)
         if (error.status == false && error.message) { throw error.message }
-        else { throw  error._message ?  error._message : "internal server error" }
+        else { throw error._message ? error._message : "internal server error" }
     }
 }
 

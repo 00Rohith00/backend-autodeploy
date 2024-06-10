@@ -142,13 +142,9 @@ const createNewUserApi = (request, response, next) => {
  * @param {Function} next - The next middleware function.
  * @return {void} Calls the next middleware function if the request body is valid, otherwise sends a fail response.
  */
-const scanType = (request, response, next) => {
-    const scanTypeSchema = joi.object(
-        {
-            scan_type: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required()
-        })
+const addScanType = (request, response, next) => {
 
-    const { error } = scanTypeSchema.validate({ scan_type: request.body.scan_type })
+    const { error } = joi.object({ scan_type: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required() }).validate({ scan_type: request.body.scan_type })
 
     if (error) {
         failResponse(response, {
@@ -160,13 +156,36 @@ const scanType = (request, response, next) => {
     else { next() }
 }
 
-const department = (request, response, next) => {
-    const departmentSchema = joi.object(
-        {
-            department: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required()
-        })
+const deleteScanType = (request, response, next) => {
 
-    const { error } = departmentSchema.validate({ department: request.body.department })
+    const { error } = joi.object({ scan_type_id: joi.number().required() }).validate({ scan_type_id: request.body.scan_type_id })
+
+    if (error) {
+        failResponse(response, {
+            status: false,
+            message: error.details[0].message.includes('is required') ?
+                error.details[0].message : `invalid input in ${error.details[0].message.split(" ")[0]}`
+        })
+    }
+    else { next() }
+}
+
+const addDepartment = (request, response, next) => {
+
+    const { error } = joi.object({ department: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required() }).validate({ department: request.body.department })
+    if (error) {
+        failResponse(response, {
+            status: false,
+            message: error.details[0].message.includes('is required') ?
+                error.details[0].message : `invalid input in ${error.details[0].message.split(" ")[0]}`
+        })
+    }
+    else { next() }
+}
+
+const deleteDepartment = (request, response, next) => {
+
+    const { error } = joi.object({ department_id: joi.number().required() }).validate({ department_id: request.body.department_id })
     if (error) {
         failResponse(response, {
             status: false,
@@ -387,9 +406,7 @@ const createNewPatientsApi = (request, response, next) => {
         patientDetails.patient_id = request.body.patient_id
     }
 
-    const patientSchema = joi.object(patientValidation)
-
-    const { error } = patientSchema.validate(patientDetails)
+    const { error } = joi.object(patientValidation).validate(patientDetails)
     if (error) {
         failResponse(response, {
             status: false,
@@ -422,7 +439,7 @@ const editDoctorDetailsApi = (request, response, next) => {
 
     let validationConditions = {
 
-        doctor_id : joi.number().required(),
+        doctor_id: joi.number().required(),
         user_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
         user_email_id: joi.string().email().required(),
         user_contact_number: joi.string().regex(/^\d{10}$/).required(),
@@ -698,14 +715,59 @@ const rescheduleAppointmentApi = (request, response, next) => {
         })
     }
     else { next() }
-
 }
 
+
+const patientReportApi = (request, response, next) => {
+
+    const { error } = joi.object({ appointment_id: joi.number().required(), report_details: joi.string().required() })
+        .validate({ appointment_id: request.body.appointment_id, report_details: request.body.report_details })
+
+    if (error) {
+        failResponse(response, {
+            status: false,
+            message: error.details[0].message.includes('is required') ?
+                error.details[0].message : `invalid input in ${error.details[0].message.split(" ")[0]}`
+        })
+    }
+    else { next() }
+}
+
+const addReportTemplateApi = (request, response, next) => {
+
+    const { error } = joi.object({ template_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(), template: joi.string().required() })
+        .validate({ template_name: request.body.template_name, template: request.body.template })
+
+    if (error) {
+        failResponse(response, {
+            status: false,
+            message: error.details[0].message.includes('is required') ?
+                error.details[0].message : `invalid input in ${error.details[0].message.split(" ")[0]}`
+        })
+    }
+    else { next() }
+}
+
+const deleteReportTemplateApi = (request, response, next) => {
+
+    const { error } = joi.object({ template_id: joi.number().required() }).validate({ template_id: request.body.template_id })
+
+    if (error) {
+        failResponse(response, {
+            status: false,
+            message: error.details[0].message.includes('is required') ?
+                error.details[0].message : `invalid input in ${error.details[0].message.split(" ")[0]}`
+        })
+    }
+    else { next() }
+}
+
+
 export default {
-    createNewClientApi, createNewUserApi, scanType, department,
-    createNewHealthCenterApi, createNewRobotApi, isExistingUserApi,
+    createNewClientApi, createNewUserApi, deleteScanType, addScanType, addDepartment,
+    deleteDepartment, createNewHealthCenterApi, createNewRobotApi, isExistingUserApi,
     setPasswordApi, loginApi, verifyOptApi, createNewPatientsApi,
     doctorDetailsApi, editDoctorDetailsApi, searchPatientInformationApi,
     listOfHospitalRobotsApi, createNewAppointmentApi, appointmentDetailsApi, editAppointmentApi,
-    listOfHospitalAppointmentsApi, rescheduleAppointmentApi
+    addReportTemplateApi, deleteReportTemplateApi, listOfHospitalAppointmentsApi, rescheduleAppointmentApi, patientReportApi,
 }

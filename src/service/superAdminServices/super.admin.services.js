@@ -233,18 +233,15 @@ const addNewScanApi = async (data) => {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: superAdminDetails.client_id })
 
-            if (clientDetails['scan_type'].includes(data.body.scan_type)) {
-                throw returnStatement(false, "given scan type is already exist")
-            }
-            else {
-                // adding new scan_type with an existing scan types
-                await collections.HospitalClientModel.findOneAndUpdate(
-                    { client_id: superAdminDetails.client_id },
-                    { $push: { scan_type: data.body.scan_type } },
-                    { new: true }
-                )
-                return returnStatement(true, "scan type is added")
-            }
+            clientDetails['scan_type'].forEach((scan) => {
+                if (scan.scan_type == data.body.scan_type) throw returnStatement(false, "given scan type is already exist")
+            })
+            await collections.HospitalClientModel.findOneAndUpdate(
+                { client_id: superAdminDetails.client_id },
+                { $push: { scan_type: { id: `${Date.now()}` + Math.round(Math.random()), scan_type: data.body.scan_type } } },
+                { new: true }
+            )
+            return returnStatement(true, "scan type is added")
         }
         else {
             throw returnStatement(false,
@@ -261,25 +258,28 @@ const addNewScanApi = async (data) => {
 const deleteScanApi = async (data) => {
 
     try {
+
         const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
 
         if (superAdminDetails && data.body.role_name === role.superAdmin) {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: superAdminDetails.client_id })
 
-            // checking whether the given scan type is exists
-            if (!clientDetails['scan_type'].includes(data.body.scan_type)) {
-                throw returnStatement(false, "scan type is not found")
-            }
-            else {
-                // deleting new scan_type with an existing scan types
-                await collections.HospitalClientModel.findOneAndUpdate(
-                    { client_id: superAdminDetails.client_id },
-                    { $pull: { scan_type: data.body.scan_type } },
-                    { new: true }
-                )
-                return returnStatement(true, "scan type is deleted")
-            }
+            const promises = clientDetails['scan_type'].map(async (scan) => {
+                if (scan.id == data.body.scan_type_id) {
+                    await collections.HospitalClientModel.findOneAndUpdate(
+                        { client_id: superAdminDetails.client_id },
+                        { $pull: { scan_type: { id: `${data.body.scan_type_id}` } } },
+                        { new: true }
+                    )
+                    return true
+                }
+            })
+            const isDeleted = await Promise.all(promises).then(results => { return results.includes(true) })
+
+            if (isDeleted) return returnStatement(true, "scan type is deleted")
+
+            else throw returnStatement(false, "given scan type is not found")
         }
         else {
             throw returnStatement(false,
@@ -288,10 +288,8 @@ const deleteScanApi = async (data) => {
         }
     }
     catch (error) {
-        // error.message is "user id is not found"
-        if (error.status == false && error.message) {
-            throw error.message
-        }
+
+        if (error.status == false && error.message) { throw error.message }
         else { throw error._message ? error._message : "internal server error" }
     }
 }
@@ -304,18 +302,15 @@ const addNewDepartmentApi = async (data) => {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: superAdminDetails.client_id })
 
-            if (clientDetails['department'].includes(data.body.department)) {
-                throw returnStatement(false, "given department is already exist")
-            }
-            else {
-                // adding new scan_type with an existing scan types
-                await collections.HospitalClientModel.findOneAndUpdate(
-                    { client_id: superAdminDetails.client_id },
-                    { $push: { department: data.body.department } },
-                    { new: true }
-                )
-                return returnStatement(true, "department is added")
-            }
+            clientDetails['department'].forEach((department) => {
+                if (department.department == data.body.department) throw returnStatement(false, "given department is already exist")
+            })
+            await collections.HospitalClientModel.findOneAndUpdate(
+                { client_id: superAdminDetails.client_id },
+                { $push: { department: { id: `${Date.now()}` + Math.round(Math.random()), department: data.body.department } } },
+                { new: true }
+            )
+            return returnStatement(true, "department is added")
         }
         else {
             throw returnStatement(false,
@@ -336,19 +331,21 @@ const deleteDepartmentApi = async (data) => {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: superAdminDetails.client_id })
 
-            // checking whether the given department is exists
-            if (!clientDetails['department'].includes(data.body.department)) {
-                throw returnStatement(false, "department is not found")
-            }
-            else {
-                // deleting new scan_type with an existing scan types
-                await collections.HospitalClientModel.findOneAndUpdate(
-                    { client_id: superAdminDetails.client_id },
-                    { $pull: { department: data.body.department } },
-                    { new: true }
-                )
-                return returnStatement(true, "department is deleted")
-            }
+            const promises = clientDetails['department'].map(async (department) => {
+                if (department.id == data.body.department_id) {
+                    await collections.HospitalClientModel.findOneAndUpdate(
+                        { client_id: superAdminDetails.client_id },
+                        { $pull: { department: { id: `${data.body.department_id}` } } },
+                        { new: true }
+                    )
+                    return true
+                }
+            })
+            const isDeleted = await Promise.all(promises).then(results => { return results.includes(true) })
+
+            if (isDeleted) return returnStatement(true, "given department is deleted")
+
+            else throw returnStatement(false, "department is not found")
         }
         else {
             throw returnStatement(false,
@@ -357,10 +354,7 @@ const deleteDepartmentApi = async (data) => {
         }
     }
     catch (error) {
-        // error.message is "user id is not found"
-        if (error.status == false && error.message) {
-            throw error.message
-        }
+        if (error.status == false && error.message) { throw error.message }
         else { throw error._message ? error._message : "internal server error" }
     }
 }

@@ -22,7 +22,9 @@ const hospitalClientSchema = new mongoose.Schema({
     logo_url: { type: String, required: true },
     domain_url: { type: String, required: true },
     scan_type: { type: Array },
-    department: { type: Array }
+    department: { type: Array },
+    templates: { type: Array }
+
 }, { timestamps: true }, { versionKey: false })
 /**
  * Plugin for auto-incrementing the client_id field in the HospitalClientSchema.
@@ -441,7 +443,6 @@ const OtpModel = mongoose.model("otp", otpSchema)
  * @typedef {Object} ReportDetails
  * @property {number} patient_id - The ID of the patient.
  * @property {string} report_details - The details of the report.
- * @property {string} report_status - The status of the report.
  * @property {number} created_by - The ID of the creator of the report.
  * @property {number} view_count - The count of views for the report.
  */
@@ -451,9 +452,8 @@ const OtpModel = mongoose.model("otp", otpSchema)
  */
 const reportSchema = new mongoose.Schema({
     report_id: { type: Number, unique: true },
-    patient_id: { type: Number, required: true },
+    appointment_id: { type: Number, required: true },
     report_details: { type: String, required: true },
-    report_status: { type: String, required: true },
     created_by: { type: Number, required: true },
     view_count: { type: Number, required: true },
 }, { timestamps: true }, { versionKey: false })
