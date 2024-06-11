@@ -393,7 +393,8 @@ const createNewAppointmentApi = async (data) => {
                     created_by: data.body.user_id,
                     is_report_sent: false,
                     call_url: await videoCallApi(conferenceInfo),
-                    action_required: false
+                    action_required: false,
+                    is_cancelled: false
                 }
 
                 if (data.body.op_id) appointmentDetails.op_id = data.body.op_id
@@ -451,7 +452,9 @@ const cancelAppointmentApi = async (data) => {
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
             const appointmentDetails = await collections.AppointmentModel
-                .findOneAndDelete({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id })
+                .findOneAndUpdate({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id },
+                    { $set: { is_cancelled: true } },
+                    { new: true })
 
             if (appointmentDetails) {
                 return returnStatement(true, "appointment is cancelled")
@@ -492,7 +495,7 @@ const listOfHospitalAppointmentsApi = async (data) => {
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin || data.body.role_name === role.doctor)) {
 
             const appointments = await collections.AppointmentModel
-                .find({ client_id: userDetails.client_id, date: data.body.date },
+                .find({ client_id: userDetails.client_id, date: data.body.date, is_cancelled: false },
                     { appointment_id: 1, scan_type: 1, doctor_id: 1, time: 1, patient_id: 1, _id: 0 })
 
             let listOfAppointments = []
@@ -558,12 +561,11 @@ const appointmentDetailsApi = async (data) => {
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin || data.body.role_name === role.doctor)) {
 
             const appointmentDetails = await collections.AppointmentModel
-                .findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id },
+                .findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id, is_cancelled: false },
                     {
                         _id: 0, __v: 0, appointment_type: 0, appointment_status: 0,
                         created_by: 0, is_report_sent: 0, action_required: 0,
-                        createdAt: 0, updatedAt: 0, client_id: 0
-                    })
+                        createdAt: 0, updatedAt: 0, client_id: 0, is_cancelled: 0 })
 
             if (!appointmentDetails) { throw returnStatement(false, "appointment id not found") }
 
@@ -640,7 +642,7 @@ const editAppointmentApi = async (data) => {
                     }),
                 collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, scan_type: 1 }),
                 collections.RobotModel.findOne({ robot_id: data.body.robot_id, branch_id: data.body.branch_id }),
-                collections.AppointmentModel.findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id })
+                collections.AppointmentModel.findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id, is_cancelled: true })
             ])
 
             if (branch && doctor && client['scan_type'].includes(data.body.scan_type) && robot && appointment) {
@@ -713,7 +715,7 @@ const rescheduleAppointmentApi = async (data) => {
 
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
-            const appointment = await collections.AppointmentModel.findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id }, { call_url: 1 })
+            const appointment = await collections.AppointmentModel.findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id, is_cancelled: false }, { call_url: 1 })
 
             if (appointment && validateDateTime(data.body.date, data.body.time)) {
 

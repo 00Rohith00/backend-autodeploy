@@ -234,6 +234,7 @@ const appointmentSchema = new mongoose.Schema({
     appointment_type: { type: String, required: true },
     created_by: { type: Number, required: true },
     is_report_sent: { type: Boolean, required: true },
+    is_cancelled: { type: Boolean, required: true },
     call_url: callUrl,
 }, { timestamps: true }, { versionKey: false })
 /**
