@@ -452,7 +452,7 @@ const cancelAppointmentApi = async (data) => {
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
             const appointmentDetails = await collections.AppointmentModel
-                .findOneAndUpdate({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id },
+                .findOneAndUpdate({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id, is_cancelled: false },
                     { $set: { is_cancelled: true } },
                     { new: true })
 
