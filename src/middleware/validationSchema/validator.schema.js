@@ -762,11 +762,12 @@ const deleteReportTemplateApi = (request, response, next) => {
     else { next() }
 }
 
+const robotMaintenanceStatusApi = (request, response, next) => { next() }
 
 export default {
     createNewClientApi, createNewUserApi, deleteScanType, addScanType, addDepartment,
     deleteDepartment, createNewHealthCenterApi, createNewRobotApi, isExistingUserApi,
-    setPasswordApi, loginApi, verifyOptApi, createNewPatientsApi,
+    setPasswordApi, loginApi, verifyOptApi, createNewPatientsApi, robotMaintenanceStatusApi,
     doctorDetailsApi, editDoctorDetailsApi, searchPatientInformationApi,
     listOfHospitalRobotsApi, createNewAppointmentApi, appointmentDetailsApi, editAppointmentApi,
     addReportTemplateApi, deleteReportTemplateApi, listOfHospitalAppointmentsApi, rescheduleAppointmentApi, patientReportApi,

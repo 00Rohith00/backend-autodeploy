@@ -17,6 +17,7 @@ import appointmentRouters from "./src/router/appointmentRouters/appointment.rout
 import doctorRouters from "./src/router/doctorRouters/doctor.routers.js"
 import patientRouters from "./src/router/patientRouters/patient.routers.js"
 import reportRouters from "./src/router/reportRouters/report.routers.js"
+import robotRouters from './src/router/robotRouters/robot.routers.js'
 
 // Use routers for various API endpoints
 application.use(`/api/${apiVersion}/developer`, devRouters)
@@ -30,6 +31,7 @@ application.use(`/api/${apiVersion}/appointment`, appointmentRouters)
 application.use(`/api/${apiVersion}/doctor`, doctorRouters)
 application.use(`/api/${apiVersion}/patient`, patientRouters)
 application.use(`/api/${apiVersion}/report`, reportRouters)
+application.use(`/api/${apiVersion}/robot`, robotRouters)
 
 // Load all the environment files to avoid crashing
 loadAssets() ?

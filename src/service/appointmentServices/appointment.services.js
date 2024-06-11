@@ -489,7 +489,7 @@ const listOfHospitalAppointmentsApi = async (data) => {
 
         const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
 
-        if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
+        if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin || data.body.role_name === role.doctor)) {
 
             const appointments = await collections.AppointmentModel
                 .find({ client_id: userDetails.client_id, date: data.body.date },
@@ -555,7 +555,7 @@ const appointmentDetailsApi = async (data) => {
 
         const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
 
-        if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
+        if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin || data.body.role_name === role.doctor)) {
 
             const appointmentDetails = await collections.AppointmentModel
                 .findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id },

@@ -195,7 +195,7 @@ const listOfReportTemplatesApi = async (data) => {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, templates: 1 })
             
-             return returnStatement(true, "list of templates", clientDetails)
+             return returnStatement(true, "list of templates", clientDetails.templates)
         }
 
         else {
