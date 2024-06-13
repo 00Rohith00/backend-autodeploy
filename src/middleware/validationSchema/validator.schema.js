@@ -99,7 +99,7 @@ const createNewUserApi = (request, response, next) => {
         const doctorDetailsValidation = {
             doctor_registration_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).required(),
             mbbs_completed_year: joi.number().integer().min(1900).max(new Date().getFullYear()).required(),
-            doctor_department: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
+            doctor_department_id: joi.number().required(),
             time_from: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).optional(),
             time_to: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).optional()
         }
@@ -107,7 +107,7 @@ const createNewUserApi = (request, response, next) => {
         const doctorDetails = {
             doctor_registration_id: request.body.doctor_registration_id,
             mbbs_completed_year: request.body.mbbs_completed_year,
-            doctor_department: request.body.doctor_department,
+            doctor_department_id: request.body.doctor_department_id,
         }
 
         if (request.body.time_from) doctorDetails.time_from = request.body.time_from
@@ -554,7 +554,7 @@ const createNewAppointmentApi = (request, response, next) => {
         doctor_id: joi.number().required(),
         date: customJoi.futureDate().required().label('Appointment-Date'),
         time: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).required().label('Appointment-Time'),
-        scan_type: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
+        scan_type_id: joi.number().required(),
         differential_diagnosis: joi.string().regex(/^(?!.* {2})(?!.*\n{2})([A-Za-z0-9.'\-#@%&/, \n]*)$/).min(3).max(30).required(),
         patient_id: joi.number().optional(),
         op_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional(),
@@ -576,7 +576,7 @@ const createNewAppointmentApi = (request, response, next) => {
         doctor_id: request.body.doctor_id,
         date: request.body.date,
         time: request.body.time,
-        scan_type: request.body.scan_type,
+        scan_type_id: request.body.scan_type_id,
         differential_diagnosis: request.body.differential_diagnosis,
 
     }
@@ -641,7 +641,7 @@ const editAppointmentApi = (request, response, next) => {
         billing_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional(),
         date: customJoi.futureDate().required().label('Appointment-Date'),
         time: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).required().label('Appointment-Time'),
-        scan_type: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
+        scan_type_id: joi.number().required(),
         differential_diagnosis: joi.string().regex(/^(?!.* {2})(?!.*\n{2})([A-Za-z0-9.'\-#@%&/, \n]*)$/).min(3).max(30).required()
     }
 
@@ -653,7 +653,7 @@ const editAppointmentApi = (request, response, next) => {
         doctor_id: request.body.doctor_id,
         date: request.body.date,
         time: request.body.time,
-        scan_type: request.body.scan_type,
+        scan_type_id: request.body.scan_type_id,
         differential_diagnosis: request.body.differential_diagnosis,
     }
 

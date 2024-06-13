@@ -312,7 +312,13 @@ const createNewAppointmentApi = async (data) => {
                     if (appointmentDetails) { throw returnStatement(false, "billing id already exists") }
                 }
 
-                if (!clientDetails.scan_type.includes(data.body.scan_type)) { throw returnStatement(false, "scan type not found") }
+                let isValidScanType = false
+
+                clientDetails['scan_type'].forEach((scan) => {
+                    if (scan.id == data.body.scan_type_id) isValidScanType = true
+                })
+
+                if (!isValidScanType) throw returnStatement(false, "scan type not found")
 
                 let patientId = data.body.patient_id
 
@@ -496,7 +502,7 @@ const listOfHospitalAppointmentsApi = async (data) => {
 
             const appointments = await collections.AppointmentModel
                 .find({ client_id: userDetails.client_id, date: data.body.date, is_cancelled: false },
-                    { appointment_id: 1, scan_type: 1, doctor_id: 1, time: 1, patient_id: 1, _id: 0 })
+                    { appointment_id: 1, scan_type_id: 1, doctor_id: 1, time: 1, patient_id: 1, _id: 0 })
 
             let listOfAppointments = []
 
@@ -511,15 +517,22 @@ const listOfHospitalAppointmentsApi = async (data) => {
                         select: '-_id user_name',
                     })
 
-                if (doctorName && patientName) {
-                    const requiredFields = {
-                        ...appointment._doc,
-                        ...patientName._doc,
-                        doctor_name: doctorName._doc.user_details._doc.user_name,
-                    }
-                    delete requiredFields.patient_id
-                    listOfAppointments.push(requiredFields)
+                const clientDetails = await collections.HospitalClientModel.find({ client_id: userDetails.client_id }, { _id: 0, scan_type: 1 })
+
+                let scanType = ""
+
+                clientDetails['scan_type'].forEach((scan) => {
+                    if (scan.id == appointment.scan_type_id) scanType = scan.scan_type
+                })
+
+                const requiredFields = {
+                    ...appointment._doc,
+                    ...patientName._doc,
+                    doctor_name: doctorName._doc.user_details._doc.user_name,
+                    scan_type: scanType
                 }
+                delete requiredFields.patient_id
+                listOfAppointments.push(requiredFields)
             }
             return returnStatement(true, `list of appointment on ${data.body.date}`, listOfAppointments)
         }
@@ -565,9 +578,18 @@ const appointmentDetailsApi = async (data) => {
                     {
                         _id: 0, __v: 0, appointment_type: 0, appointment_status: 0,
                         created_by: 0, is_report_sent: 0, action_required: 0,
-                        createdAt: 0, updatedAt: 0, client_id: 0, is_cancelled: 0 })
+                        createdAt: 0, updatedAt: 0, client_id: 0, is_cancelled: 0
+                    })
 
             if (!appointmentDetails) { throw returnStatement(false, "appointment id not found") }
+
+            const clientDetails = await collections.HospitalClientModel.find({ client_id: userDetails.client_id }, { _id: 0, scan_type: 1 })
+
+            let scanType = ""
+
+            clientDetails['scan_type'].forEach((scan) => {
+                if (scan.id == appointmentDetails.scan_type_id) scanType = scan.scan_type
+            })
 
             const [patientId, doctorName, robotDetails, branch] = await Promise.all([
 
@@ -599,6 +621,7 @@ const appointmentDetailsApi = async (data) => {
                 branch_name: branch.branch_name,
                 doctor_name: doctorName.user_details.user_name,
                 ...appointmentDetails._doc,
+                scan_type: scanType
             })
         }
         else {
@@ -645,11 +668,17 @@ const editAppointmentApi = async (data) => {
                 collections.AppointmentModel.findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id, is_cancelled: true })
             ])
 
-            if (branch && doctor && client['scan_type'].includes(data.body.scan_type) && robot && appointment) {
+            if (branch && doctor && client && robot && appointment) {
 
                 if (!appointment.appointment_status === "up_coming") { throw returnStatement(false, "you can edit only up coming appointments") }
 
                 if (!validateDateTime(data.body.date, data.body.time)) { throw returnStatement(false, "both time and date should be future date value") }
+
+                let scanType = ""
+
+                clientDetails['scan_type'].forEach((scan) => {
+                    if (scan.id == appointment.scan_type_id) scanType = scan.scan_type
+                })
 
                 const editAppointmentParams = {
                     branch_id: data.body.branch_id,
@@ -657,7 +686,7 @@ const editAppointmentApi = async (data) => {
                     doctor_id: data.body.doctor_id,
                     date: data.body.date,
                     time: data.body.time,
-                    scan_type: data.body.scan_type,
+                    scan_type: {scan_type: data.body.scan_type },
                     differential_diagnosis: data.body.differential_diagnosis
                 }
 
@@ -692,7 +721,7 @@ const editAppointmentApi = async (data) => {
                     !branch ? "branch id is not found" :
                         !robot ? "robot id is not found" :
                             !doctor ? "doctor id is not found" :
-                                !appointment ? "appointment id is not found" : "scan type not found")
+                                !appointment ? "appointment id is not found" : " client id not found")
             }
         }
         else {

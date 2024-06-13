@@ -170,7 +170,7 @@ const UserLoginModel = mongoose.model("user_login", userLoginSchema)
 const doctorSchema = new mongoose.Schema({
     doctor_registration_id: { type: String, required: true, unique: true },
     mbbs_completed_year: { type: String, required: true },
-    doctor_department: { type: String, required: true },
+    doctor_department_id: { type: Number, required: true },
     time_from: { type: String },
     time_to: { type: String },
     is_approved: { type: Boolean, required: true },
