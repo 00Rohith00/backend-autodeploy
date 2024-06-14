@@ -593,7 +593,7 @@ const appointmentDetailsApi = async (data) => {
 
             if (!appointmentDetails) { throw returnStatement(false, "appointment id not found") }
 
-            const [patientId, doctorName, robotDetails, branch] = await Promise.all([
+            const [patientId, doctorName, robotDetails, branch, client] = await Promise.all([
 
                 collections.PatientModel
                     .findOne({ patient_id: appointmentDetails.patient_id },
@@ -614,13 +614,23 @@ const appointmentDetailsApi = async (data) => {
                     .findOne({ robot_id: appointmentDetails.robot_id, branch_id: appointmentDetails.branch_id }, { robot_registration_id: 1, _id: 0 }),
 
                 collections.HealthCenterModel
-                    .findOne({ branch_id: appointmentDetails.branch_id }, { branch_name: 1, _id: 0 })
+                    .findOne({ branch_id: appointmentDetails.branch_id }, { branch_name: 1, _id: 0 }),
+
+                collections.HospitalClientModel.findOne({ client_id: userDetails.client_id })
             ])
+
+            let scanType = ""
+
+            client['scan_type'].forEach((scan) => {
+
+                if (scan.id == appointment.scan_type_id) scanType = scan.scan_type
+            })
 
             return returnStatement(true, "appointment details", {
                 ...patientId._doc,
                 ...robotDetails._doc,
                 branch_name: branch.branch_name,
+                scan_type: scanType,
                 doctor_name: doctorName.user_details.user_name,
                 ...appointmentDetails._doc,
             })
