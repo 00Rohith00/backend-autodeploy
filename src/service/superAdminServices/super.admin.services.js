@@ -30,7 +30,7 @@ const createNewAdminApi = async (data) => {
     try {
 
         const [superAdminDetails, isExistingEmailId] = await Promise.all([
-            collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
+            collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 }),
             collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id })
         ])
 
@@ -98,7 +98,7 @@ const createNewAdminApi = async (data) => {
             throw returnStatement(false,
                 !superAdminDetails ? "used id is not found" :
                     isExistingEmailId ? "email id is already exists" :
-                        `${data.body.role_name} user can't able to create new admin`)
+                        `${data.body.role_name} can't able to create new admin`)
         }
     }
     catch (error) {
@@ -132,7 +132,7 @@ const createNewHealthCenterApi = async (data) => {
 
     try {
 
-        const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
+        const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
 
         if (superAdminDetails && data.body.role_name === role.superAdmin) {
 
@@ -156,7 +156,7 @@ const createNewHealthCenterApi = async (data) => {
         else {
             throw returnStatement(false,
                 !superAdminDetails ? "used id is not found" :
-                    `${data.body.role_name} user cannot create new health center`)
+                    `${data.body.role_name} can't bale to create new health center`)
         }
     }
     catch (error) {
@@ -188,13 +188,15 @@ const createNewRobotApi = async (data) => {
 
     try {
         const [superAdminDetails, robotCollection] = await Promise.all([
-            collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
+            collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 }),
             collections.RobotModel.findOne({ robot_registration_id: data.body.robot_registration_id })
         ])
 
-        const healthCenterDetails = await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: superAdminDetails.client_id })
+        if (superAdminDetails && !robotCollection && data.body.role_name === role.superAdmin) {
 
-        if (superAdminDetails && healthCenterDetails && !robotCollection && data.body.role_name === role.superAdmin) {
+            const healthCenterDetails = await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: superAdminDetails.client_id })
+
+            if (!healthCenterDetails) throw returnStatement(false, "branch id not found")
 
             const robotDetails = {
                 robot_registration_id: data.body.robot_registration_id,
@@ -213,9 +215,8 @@ const createNewRobotApi = async (data) => {
         else {
             throw returnStatement(false,
                 !superAdminDetails ? "used id is not found" :
-                    !healthCenterDetails ? "branch id is not found" :
-                        data.body.role_name != role.superAdmin ? `${data.body.role_name} user can't able to create new robot` :
-                            "robot registration id already exists")
+                    data.body.role_name != role.superAdmin ? `${data.body.role_name} can't able to create new robot` :
+                        "robot registration id already exists")
         }
     }
     catch (error) {
@@ -227,18 +228,19 @@ const createNewRobotApi = async (data) => {
 const addNewScanApi = async (data) => {
 
     try {
-        const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
+        const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
 
         if (superAdminDetails && data.body.role_name === role.superAdmin) {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: superAdminDetails.client_id })
 
             clientDetails['scan_type'].forEach((scan) => {
-                if (scan.scan_type == data.body.scan_type) throw returnStatement(false, "given scan type is already exist")
+                if (scan.scan_type == data.body.scan_type && scan.is_archive == false) throw returnStatement(false, "given scan type is already exist")
             })
+
             await collections.HospitalClientModel.findOneAndUpdate(
                 { client_id: superAdminDetails.client_id },
-                { $push: { scan_type: { id: `${Date.now()}` + Math.round(Math.random()), scan_type: data.body.scan_type } } },
+                { $push: { scan_type: { id: `${Date.now()}`, scan_type: data.body.scan_type, is_archive: false } } },
                 { new: true }
             )
             return returnStatement(true, "scan type is added")
@@ -246,7 +248,7 @@ const addNewScanApi = async (data) => {
         else {
             throw returnStatement(false,
                 !superAdminDetails ? "used id is not found" :
-                    `${data.body.role_name} user cannot add new scan type`)
+                    `${data.body.role_name} can't able to add new scan type`)
         }
     }
     catch (error) {
@@ -259,17 +261,24 @@ const deleteScanApi = async (data) => {
 
     try {
 
-        const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
+        const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
 
         if (superAdminDetails && data.body.role_name === role.superAdmin) {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: superAdminDetails.client_id })
 
             const promises = clientDetails['scan_type'].map(async (scan) => {
-                if (scan.id == data.body.scan_type_id) {
+
+                if (scan.id == data.body.scan_type_id && scan.is_archive == false) {
                     await collections.HospitalClientModel.findOneAndUpdate(
                         { client_id: superAdminDetails.client_id },
-                        { $pull: { scan_type: { id: `${data.body.scan_type_id}` } } },
+                        { $pull: { scan_type: { id: scan.id } } },
+                        { new: true }
+                    )
+
+                    await collections.HospitalClientModel.findOneAndUpdate(
+                        { client_id: superAdminDetails.client_id },
+                        { $push: { scan_type: {id: scan.id, scan_type: scan.scan_type, is_archive: true} } },
                         { new: true }
                     )
                     return true
@@ -284,7 +293,7 @@ const deleteScanApi = async (data) => {
         else {
             throw returnStatement(false,
                 !superAdminDetails ? "used id is not found" :
-                    `${data.body.role_name} user cannot able to  delete existing scan type`)
+                    `${data.body.role_name} can't able to delete existing scan type`)
         }
     }
     catch (error) {
@@ -296,18 +305,19 @@ const deleteScanApi = async (data) => {
 
 const addNewDepartmentApi = async (data) => {
     try {
-        const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
+        const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
 
         if (superAdminDetails && data.body.role_name === role.superAdmin) {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: superAdminDetails.client_id })
 
             clientDetails['department'].forEach((department) => {
-                if (department.department == data.body.department) throw returnStatement(false, "given department is already exist")
+                if (department.department == data.body.department && department.is_archive == false) throw returnStatement(false, "given department is already exist")
             })
+
             await collections.HospitalClientModel.findOneAndUpdate(
                 { client_id: superAdminDetails.client_id },
-                { $push: { department: { id: `${Date.now()}` + Math.round(Math.random()), department: data.body.department } } },
+                { $push: { department: { id: `${Date.now()}`, department: data.body.department, is_archive: false } } },
                 { new: true }
             )
             return returnStatement(true, "department is added")
@@ -315,7 +325,7 @@ const addNewDepartmentApi = async (data) => {
         else {
             throw returnStatement(false,
                 !superAdminDetails ? "used id is not found" :
-                    `${data.body.role_name} user cannot add department`)
+                    `${data.body.role_name} can't able to add new department`)
         }
     }
     catch (error) {
@@ -325,17 +335,24 @@ const addNewDepartmentApi = async (data) => {
 }
 const deleteDepartmentApi = async (data) => {
     try {
-        const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
+        const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
 
         if (superAdminDetails && data.body.role_name === role.superAdmin) {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: superAdminDetails.client_id })
 
             const promises = clientDetails['department'].map(async (department) => {
-                if (department.id == data.body.department_id) {
+
+                if (department.id == data.body.department_id && department.is_archive == false) {
                     await collections.HospitalClientModel.findOneAndUpdate(
                         { client_id: superAdminDetails.client_id },
-                        { $pull: { department: { id: `${data.body.department_id}` } } },
+                        { $pull: { department : { id: department.id } } },
+                        { new: true }
+                    )
+
+                    await collections.HospitalClientModel.findOneAndUpdate(
+                        { client_id: superAdminDetails.client_id },
+                        { $push: { department: {id: department.id, department: department.department, is_archive: true} } },
                         { new: true }
                     )
                     return true
@@ -350,7 +367,7 @@ const deleteDepartmentApi = async (data) => {
         else {
             throw returnStatement(false,
                 !superAdminDetails ? "used id is not found" :
-                    `${data.body.role_name} user cannot able to  delete existing department`)
+                    `${data.body.role_name}can't able to delete existing department`)
         }
     }
     catch (error) {

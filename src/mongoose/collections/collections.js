@@ -170,7 +170,7 @@ const UserLoginModel = mongoose.model("user_login", userLoginSchema)
 const doctorSchema = new mongoose.Schema({
     doctor_registration_id: { type: String, required: true, unique: true },
     mbbs_completed_year: { type: String, required: true },
-    doctor_department_id: { type: Number, required: true },
+    department_id: { type: Number, required: true },
     time_from: { type: String },
     time_to: { type: String },
     is_approved: { type: Boolean, required: true },
@@ -220,7 +220,6 @@ const callUrl = {
 const appointmentSchema = new mongoose.Schema({
     appointment_id: { type: Number, unique: true },
     client_id: { type: Number, required: true },
-    op_id: { type: String },
     billing_id: { type: String },
     patient_id: { type: Number, required: true },
     doctor_id: { type: Number, required: true },
@@ -228,7 +227,7 @@ const appointmentSchema = new mongoose.Schema({
     robot_id: { type: Number, required: true },
     date: { type: String, required: true },
     time: { type: String, required: true },
-    scan_type: { type: String, required: true },
+    scan_type_id: { type: Number, required: true },
     differential_diagnosis: { type: String, required: true },
     appointment_status: { type: String, required: true },
     appointment_type: { type: String, required: true },
@@ -468,8 +467,7 @@ reportSchema.plugin(AutoIncrementPlugin, { inc_field: 'report_id' })
  */
 const ReportModel = mongoose.model("report", reportSchema)
 
-
-
+    
 export default {
     HospitalClientModel, UserModel,
     UserDetailModel, UserRoleModel,

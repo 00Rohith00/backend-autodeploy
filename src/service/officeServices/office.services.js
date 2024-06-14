@@ -41,8 +41,9 @@ const createNewClientApi = async (data) => {
             let scanType = []
             data.body.scan_type.forEach((scan, index) => {
                 scanType.push({
-                    id: Date.now() + index,
-                    scan_type: scan
+                    id: Date.now() + `${index}`,
+                    scan_type: scan,
+                    is_archive: false
                 })
             })
             clientDetails.scan_type = scanType
@@ -54,7 +55,8 @@ const createNewClientApi = async (data) => {
             data.body.department.forEach((department, index) => {
                 departmentName.push({
                     id: Date.now() + `${index}`,
-                    department: department
+                    department: department,
+                    is_archive: false
                 })
             })
             clientDetails.department = departmentName

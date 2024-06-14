@@ -31,15 +31,19 @@ const createNewSystemAdminApi = async (data) => {
   try {
     // Fetching necessary details from different collections
     const [adminDetails, isEmailExist] = await Promise.all([
-      collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
+      collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 }),
       collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id })
     ])
 
-    const healthCenterDetails = await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: adminDetails.client_id })
 
     // Validation checks
-    if (adminDetails && !isEmailExist && data.body.role_name === role.admin && healthCenterDetails) {
+    if (adminDetails && !isEmailExist && data.body.role_name === role.admin) {
       // Creating personal details for the new user
+
+      const healthCenterDetails = await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: adminDetails.client_id })
+
+      if (!healthCenterDetails) throw returnStatement(false, "branch id not found")
+
       const personalDetails = {
         user_name: data.body.user_name,
         user_email_id: data.body.user_email_id,
@@ -91,7 +95,7 @@ const createNewSystemAdminApi = async (data) => {
                 { $push: { system_admin_id: userId } },
                 { new: true }
               )
-              return returnStatement(true, "System admin is created")
+              return returnStatement(true, "system admin is created")
             }
             else { throw error }
           }
@@ -104,10 +108,9 @@ const createNewSystemAdminApi = async (data) => {
     else {
       // Error handling for validation failures
       throw returnStatement(false,
-        !adminDetails ? "User ID is not found" :
-          isEmailExist ? "Email ID already exists" :
-            !healthCenterDetails ? "Branch ID not found" :
-              `${data.body.role_name} user can't able to create a new system admin`)
+        !adminDetails ? "user id is not found" :
+          isEmailExist ? "email id already exists" :
+            `${data.body.role_name} can't able to create a new system admin`)
     }
   } catch (error) {
     // Rollback in case of failure
@@ -151,27 +154,27 @@ const createNewDoctorApi = async (data) => {
   try {
 
     const [adminDetails, doctorCollection, isEmailExist] = await Promise.all([
-      collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
+      collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 }),
       collections.DoctorModel.findOne({ doctor_registration_id: data.body.doctor_registration_id }),
       collections.UserDetailModel.findOne({ user_email_id: data.body.user_email_id })
     ])
 
     if (adminDetails && !doctorCollection && !isEmailExist && data.body.role_name === role.admin) {
 
-      const client = await collections.HospitalClientModel.findOne({ client_id: adminDetails.client_id })
+      const clientDetails = await collections.HospitalClientModel.findOne({ client_id: adminDetails.client_id })
 
       let isValidDepartment = false
-      
-      client['department'].forEach((department) => {
-        if (department.id == data.body.doctor_department_id) isValidDepartment = true
+
+      clientDetails['department'].forEach((department) => {
+        if (department.id == data.body.department_id && department.is_archive == false) isValidDepartment = true
       })
-      
-      if (!isValidDepartment) throw returnStatement(false, "department not found")
+
+      if (!isValidDepartment) throw returnStatement(false, "department id not found")
 
       const doctorDetails = {
         doctor_registration_id: data.body.doctor_registration_id,
         mbbs_completed_year: data.body.mbbs_completed_year,
-        doctor_department_id: data.body.doctor_department_id,
+        department_id: data.body.department_id,
         is_approved: true                               // write a cron job for doctor verification
       }
 
@@ -239,6 +242,7 @@ const createNewDoctorApi = async (data) => {
     }
   }
   catch (error) {
+    console.log(error);
     rollBack(doctorRollBackPrams)
     if (error.status == false && error.message) { throw error.message }
     else { throw error._message ? error._message : "internal server error" }

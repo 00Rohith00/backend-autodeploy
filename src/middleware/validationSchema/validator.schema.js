@@ -99,7 +99,7 @@ const createNewUserApi = (request, response, next) => {
         const doctorDetailsValidation = {
             doctor_registration_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).required(),
             mbbs_completed_year: joi.number().integer().min(1900).max(new Date().getFullYear()).required(),
-            doctor_department_id: joi.number().required(),
+            department_id: joi.number().required(),
             time_from: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).optional(),
             time_to: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).optional()
         }
@@ -107,7 +107,7 @@ const createNewUserApi = (request, response, next) => {
         const doctorDetails = {
             doctor_registration_id: request.body.doctor_registration_id,
             mbbs_completed_year: request.body.mbbs_completed_year,
-            doctor_department_id: request.body.doctor_department_id,
+            department_id: request.body.department_id,
         }
 
         if (request.body.time_from) doctorDetails.time_from = request.body.time_from
@@ -449,7 +449,7 @@ const editDoctorDetailsApi = (request, response, next) => {
         image_url: joi.string().uri().required(),
         doctor_registration_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).required(),
         mbbs_completed_year: joi.number().integer().min(1900).max(new Date().getFullYear()).required(),
-        doctor_department: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
+        department_id: joi.number().required(),
         time_from: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).optional(),
         time_to: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).optional()
     }
@@ -470,7 +470,7 @@ const editDoctorDetailsApi = (request, response, next) => {
         user_age: request.body.user_age,
         doctor_registration_id: request.body.doctor_registration_id,
         mbbs_completed_year: request.body.mbbs_completed_year,
-        doctor_department: request.body.doctor_department,
+        department_id: request.body.department_id,
     }
 
     if (request.body.time_from) doctorDetails.time_from = request.body.time_from

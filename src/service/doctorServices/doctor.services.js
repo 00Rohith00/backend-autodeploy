@@ -21,14 +21,15 @@ import { returnStatement } from "../../utils/return.handler.js"
 const listOfDoctorsApi = async (data) => {
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
 
         if (userDetails && (data.body.role_name === role.admin || data.body.role_name === role.systemAdmin)) {
 
             const listOfUser = await collections.UserModel.find({
                 client_id: userDetails.client_id,
                 created_by: { $ne: null },
-                branch_id: null
+                branch_id: null,
+                is_archive: false
             }, { _id: 0, user_id: 1 })
                 .populate({
                     path: 'user_details',
@@ -57,7 +58,7 @@ const listOfDoctorsApi = async (data) => {
         else {
             throw returnStatement(false,
                 !userDetails ? "used id is not found" :
-                    `${data.body.role_name} user cannot able to view list of doctors`)
+                    `${data.body.role_name} can't able to view list of doctors`)
         }
     }
     catch (error) {
@@ -71,14 +72,14 @@ const doctorDetailsApi = async (data) => {
     try {
 
         const [userDetails, doctorDetails] = await Promise.all([
-            collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
-            collections.UserModel.findOne({ user_id: data.body.doctor_id }, { _id: 0, client_id: 1, image_url: 1 })
+            collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 }),
+            collections.UserModel.findOne({ user_id: data.body.doctor_id, is_archive: false }, { _id: 0, client_id: 1, image_url: 1 })
                 .populate({
                     path: 'user_details',
                     select: 'user_name user_email_id user_contact_number user_age user_gender -_id user_location user_pin_code',
                     populate: {
                         path: 'doctor',
-                        select: '-_id doctor_department doctor_registration_id mbbs_completed_year time_from time_to'
+                        select: '-_id department_id doctor_registration_id mbbs_completed_year time_from time_to'
                     }
                 })
         ])
@@ -88,7 +89,7 @@ const doctorDetailsApi = async (data) => {
             if (userDetails.client_id != doctorDetails.client_id || !doctorDetails.user_details.doctor)
                 throw returnStatement(false, "doctor id not found")
 
-            const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, hospital_name: 1 })
+            const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id })
             const details = {
                 doctor_id: data.body.doctor_id,
                 doctor_name: doctorDetails.user_details.user_name,
@@ -103,13 +104,16 @@ const doctorDetailsApi = async (data) => {
                 ...doctorDetails.user_details.doctor._doc
             }
 
+            clientDetails['department'].forEach((department) => {
+                if (department.id == details.department_id) details.doctor_department = department.department
+            })
             return returnStatement(true, "doctor details", details)
         }
         else {
             throw returnStatement(false,
                 !userDetails ? "used id is not found" :
                     !doctorDetails ? "doctor id is not found" :
-                        `${data.body.role_name} user cannot able to view doctor details`)
+                        `${data.body.role_name} can't able to view doctor details`)
         }
     }
     catch (error) {
@@ -121,19 +125,25 @@ const doctorDetailsApi = async (data) => {
 const listOfDepartmentsApi = async (data) => {
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
 
         if (userDetails && (data.body.role_name === role.admin || data.body.role_name === role.systemAdmin)) {
 
-            const listOfDepartments = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, department: 1 })
+            const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, department: 1 })
 
-            return returnStatement(true, `list of hospital departments`, listOfDepartments.department)
+            let listOfDepartments = []
 
+            clientDetails['department'].forEach((department) => {
+                if (department.is_archive == false)
+                    listOfDepartments.push({ id: department.id, department: department.department })
+            })
+
+            return returnStatement(true, `list of hospital departments`, listOfDepartments)
         }
         else {
             throw returnStatement(false,
                 !userDetails ? "used id is not found" :
-                    `${data.body.role_name} user cannot able to view list of hospital departments`)
+                    `${data.body.role_name} can't able to view list of hospital departments`)
         }
     }
     catch (error) {
@@ -147,8 +157,8 @@ const editDoctorDetailsApi = async (data) => {
     try {
 
         const [userDetails, doctor] = await Promise.all([
-            collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 }),
-            collections.UserModel.findOne({ user_id: data.body.doctor_id }, { _id: 0, client_id: 1, image_url: 1 })
+            collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 }),
+            collections.UserModel.findOne({ user_id: data.body.doctor_id, is_archive: false }, { _id: 0, client_id: 1, image_url: 1 })
                 .populate({
                     path: 'user_details',
                     select: 'user_name user_email_id user_contact_number user_age user_gender -_id user_location',
@@ -172,15 +182,21 @@ const editDoctorDetailsApi = async (data) => {
                 const isExisting = await collections.DoctorModel.findOne({ doctor_registration_id: data.body.doctor_registration_id })
                 if (isExisting) throw returnStatement(false, "doctor registration id is already exists")
             }
-           
+
             const client = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id })
 
-            if(!client['department'].includes(data.body.doctor_department)) throw returnStatement(false, "department not found")
+            let isValidDepartment = false
+
+            client['department'].forEach((department) => {
+                if (department.id == data.body.department_id && department.is_archive == false) isValidDepartment = true
+            })
+
+            if (!isValidDepartment) throw returnStatement(false, "department id not found")
 
             const doctorParams = {
                 doctor_registration_id: data.body.doctor_registration_id,
                 mbbs_completed_year: data.body.mbbs_completed_year,
-                doctor_department: data.body.doctor_department,
+                department_id: data.body.department_id,
             }
 
             if (data.body.time_from) doctorParams.time_from = data.body.time_from

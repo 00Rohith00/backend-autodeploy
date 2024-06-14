@@ -31,11 +31,13 @@ const isExistingUserApi = async (data) => {
 
     if (!isExistingEmailId) throw returnStatement(false, "email id is not found")
 
-    const loginObjectId = await collections.UserModel.findOne({ user_details: isExistingEmailId._id }, { _id: 0 })
+    const loginObjectId = await collections.UserModel.findOne({ user_details: isExistingEmailId._id, is_archive: false }, { _id: 0 })
       .populate({
         path: 'user_login',
         select: 'update_count -_id',
       })
+
+    if (!loginObjectId) throw returnStatement(false, "email id is not found")
 
     return returnStatement(true, "existing email id",
       {
@@ -85,11 +87,13 @@ const setPasswordApi = async (data) => {
     if (!isExistingEmailId) throw returnStatement(false, "email id not found")
 
     const userDetails = await collections.UserModel
-      .findOne({ user_details: isExistingEmailId._id }, { user_login: 1, _id: 0 })
+      .findOne({ user_details: isExistingEmailId._id, is_archive: false }, { user_login: 1, _id: 0 })
       .populate({
         path: 'user_login',
         select: '_id update_count',
       })
+
+    if (!userDetails) throw returnStatement(false, "email id not found")
 
     await collections.UserLoginModel.findOneAndUpdate(
       { _id: userDetails.user_login._id },
@@ -145,12 +149,14 @@ const userLoginApi = async (data) => {
     if (!isExistingEmailId) throw returnStatement(false, "email id not found")
 
     const userDetails = await collections.UserModel
-      .findOne({ user_details: isExistingEmailId._id },
+      .findOne({ user_details: isExistingEmailId._id, is_archive: false },
         { _id: 0, user_login: 1, user_id: 1, user_roles: 1 })
       .populate({
         path: 'user_roles',
         select: '-_id role_id role_name',
       })
+
+    if (!userDetails) throw returnStatement(false, "email id not found")
 
     const loginDetails = await collections.UserLoginModel.findById(userDetails.user_login)
 
@@ -194,6 +200,10 @@ const sendOtpApi = async (data) => {
 
     if (!isExistingEmailId) throw returnStatement(false, "email id not found")
 
+    const userDetails = await collections.UserModel.findOne({ user_details: isExistingEmailId._id, is_archive: false })
+
+    if (!userDetails) throw returnStatement(false, "email id not found")
+
     const [loginObjectId, otpCollection] = await Promise.all([
       collections.UserModel.findOne({ user_details: isExistingEmailId._id }, { _id: 0 })
         .populate({
@@ -230,7 +240,7 @@ const sendOtpApi = async (data) => {
         { new: true }
       )
     }
-    await sendEmail(data.body.user_email_id, "email notification testing", "atre health tech", "srohith10012002@gmail.com", `hello guys current i am doing email notification service using mail chimp ${otp}`)
+    await sendEmail(data.body.user_email_id, "email notification testing", "atre health tech", "srohith10012002@gmail.com", `your otp is ${otp} only valid for next 10 minutes`)
 
     return returnStatement(true, "OTP sent successfully")
   }
@@ -251,6 +261,10 @@ const verifyOtpApi = async (data) => {
     ])
 
     if (isExistingEmailId && otpCollection) {
+
+      const userDetails = await collections.UserModel.findOne({ user_details: isExistingEmailId._id, is_archive: false })
+
+      if (!userDetails) throw returnStatement(false, "email id not found")
 
       const timeDifference = Date.now() - otpCollection.expiry_date_time
 

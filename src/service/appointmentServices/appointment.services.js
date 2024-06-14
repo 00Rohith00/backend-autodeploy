@@ -26,7 +26,7 @@ const searchPatientInformationApi = async (data) => {
     try {
 
         //  retrieving the user's details [admin or system_admin] using user_id 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { client_id: 1 })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { client_id: 1 })
 
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
@@ -41,7 +41,7 @@ const searchPatientInformationApi = async (data) => {
                         electronic_id: 1, _id: 0
                     })
 
-            if (patientInformation.length == 0) throw returnStatement(false, "patient not found")
+            if (patientInformation.length == 0) throw returnStatement(false, "patient not found from the given phone number")
 
             return returnStatement(true, "list of patient's details", patientInformation)
         }
@@ -71,14 +71,21 @@ const listOfScanTypesApi = async (data) => {
 
     try {
         // retrieving the user's details [admin or system_admin] using user_id 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { client_id: 1 })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { client_id: 1 })
 
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
-            const listOfScanTypes = await collections.HospitalClientModel
+            const clientDetails = await collections.HospitalClientModel
                 .findOne({ client_id: userDetails.client_id }, { scan_type: 1, _id: 0 })
 
-            return returnStatement(true, "list of scan types", listOfScanTypes['scan_type'])
+            let listOfScanTypes = []
+
+            clientDetails['scan_type'].forEach((scan) => {
+                if (scan.is_archive == false)
+                    listOfScanTypes.push({ id: scan.id, scan_type: scan.scan_type })
+            })
+
+            return returnStatement(true, "list of scan types", listOfScanTypes)
         }
         else {
             throw returnStatement(false,
@@ -110,7 +117,7 @@ const listOfHospitalDoctorsApi = async (data) => {
     try {
 
         // retrieving the user's details [admin or system_admin] using user_id 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false })
 
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
@@ -126,7 +133,8 @@ const listOfHospitalDoctorsApi = async (data) => {
                 .find({
                     client_id: userDetails.client_id,
                     created_by: { $ne: null },                // $ne --> not equal to
-                    branch_id: null
+                    branch_id: null,
+                    is_archive: false
                 }, {
                     user_id: 1,
                     _id: 0
@@ -181,7 +189,7 @@ const listOfHealthCenterApi = async (data) => {
 
     try {
         // retrieving the user's details [admin or system_admin] using user_id to find client_id
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false })
 
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
@@ -226,7 +234,7 @@ const listOfHealthCenterApi = async (data) => {
 const listOfHospitalRobotsApi = async (data) => {
 
     try {
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false })
         const branchDetails = await collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: userDetails.client_id })
 
         if (branchDetails && userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
@@ -294,12 +302,12 @@ const createNewAppointmentApi = async (data) => {
 
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
 
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
             const [doctorDetails, branchDetails, robotDetails, clientDetails] = await Promise.all([
-                collections.UserModel.findOne({ user_id: data.body.doctor_id, client_id: userDetails.client_id }),
+                collections.UserModel.findOne({ user_id: data.body.doctor_id, client_id: userDetails.client_id, is_archive: false }),
                 collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: userDetails.client_id }),
                 collections.RobotModel.findOne({ robot_id: data.body.robot_id, branch_id: data.body.branch_id }),
                 collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, scan_type: 1 })
@@ -315,10 +323,10 @@ const createNewAppointmentApi = async (data) => {
                 let isValidScanType = false
 
                 clientDetails['scan_type'].forEach((scan) => {
-                    if (scan.id == data.body.scan_type_id) isValidScanType = true
+                    if (scan.is_archive == false && scan.id == data.body.scan_type_id) isValidScanType = true
                 })
 
-                if (!isValidScanType) throw returnStatement(false, "scan type not found")
+                if (!isValidScanType) throw returnStatement(false, "scan type id not found")
 
                 let patientId = data.body.patient_id
 
@@ -392,7 +400,7 @@ const createNewAppointmentApi = async (data) => {
                     robot_id: data.body.robot_id,
                     date: data.body.date,
                     time: data.body.time,
-                    scan_type: data.body.scan_type,
+                    scan_type_id: data.body.scan_type_id,
                     differential_diagnosis: data.body.differential_diagnosis,
                     appointment_status: "up_coming",
                     appointment_type: "normal_appointment",
@@ -402,8 +410,6 @@ const createNewAppointmentApi = async (data) => {
                     action_required: false,
                     is_cancelled: false
                 }
-
-                if (data.body.op_id) appointmentDetails.op_id = data.body.op_id
 
                 if (data.body.billing_id) appointmentDetails.billing_id = data.body.billing_id
 
@@ -453,7 +459,7 @@ const cancelAppointmentApi = async (data) => {
 
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false })
 
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
@@ -496,13 +502,13 @@ const listOfHospitalAppointmentsApi = async (data) => {
 
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false })
 
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin || data.body.role_name === role.doctor)) {
 
             const appointments = await collections.AppointmentModel
                 .find({ client_id: userDetails.client_id, date: data.body.date, is_cancelled: false },
-                    { appointment_id: 1, scan_type_id: 1, doctor_id: 1, time: 1, patient_id: 1, _id: 0 })
+                    { appointment_id: 1, scan_type: 1, doctor_id: 1, time: 1, patient_id: 1, _id: 0 })
 
             let listOfAppointments = []
 
@@ -517,22 +523,15 @@ const listOfHospitalAppointmentsApi = async (data) => {
                         select: '-_id user_name',
                     })
 
-                const clientDetails = await collections.HospitalClientModel.find({ client_id: userDetails.client_id }, { _id: 0, scan_type: 1 })
-
-                let scanType = ""
-
-                clientDetails['scan_type'].forEach((scan) => {
-                    if (scan.id == appointment.scan_type_id) scanType = scan.scan_type
-                })
-
-                const requiredFields = {
-                    ...appointment._doc,
-                    ...patientName._doc,
-                    doctor_name: doctorName._doc.user_details._doc.user_name,
-                    scan_type: scanType
+                if (doctorName && patientName) {
+                    const requiredFields = {
+                        ...appointment._doc,
+                        ...patientName._doc,
+                        doctor_name: doctorName._doc.user_details._doc.user_name,
+                    }
+                    delete requiredFields.patient_id
+                    listOfAppointments.push(requiredFields)
                 }
-                delete requiredFields.patient_id
-                listOfAppointments.push(requiredFields)
             }
             return returnStatement(true, `list of appointment on ${data.body.date}`, listOfAppointments)
         }
@@ -569,7 +568,7 @@ const appointmentDetailsApi = async (data) => {
 
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false })
 
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin || data.body.role_name === role.doctor)) {
 
@@ -578,25 +577,17 @@ const appointmentDetailsApi = async (data) => {
                     {
                         _id: 0, __v: 0, appointment_type: 0, appointment_status: 0,
                         created_by: 0, is_report_sent: 0, action_required: 0,
-                        createdAt: 0, updatedAt: 0, client_id: 0, is_cancelled: 0
+                        createdAt: 0, updatedAt: 0, client_id: 0, is_cancelled: 0, op_id: 0
                     })
 
             if (!appointmentDetails) { throw returnStatement(false, "appointment id not found") }
-
-            const clientDetails = await collections.HospitalClientModel.find({ client_id: userDetails.client_id }, { _id: 0, scan_type: 1 })
-
-            let scanType = ""
-
-            clientDetails['scan_type'].forEach((scan) => {
-                if (scan.id == appointmentDetails.scan_type_id) scanType = scan.scan_type
-            })
 
             const [patientId, doctorName, robotDetails, branch] = await Promise.all([
 
                 collections.PatientModel
                     .findOne({ patient_id: appointmentDetails.patient_id },
                         {
-                            _id: 0, patient_name: 1, patient_email_id: 1,
+                            _id: 0, patient_name: 1, patient_email_id: 1, op_id: 1,
                             patient_gender: 1, patient_age: 1, patient_mobile_number: 1,
                             patient_pin_code: 1, electronic_id: 1, patient_address: 1
                         }),
@@ -621,7 +612,6 @@ const appointmentDetailsApi = async (data) => {
                 branch_name: branch.branch_name,
                 doctor_name: doctorName.user_details.user_name,
                 ...appointmentDetails._doc,
-                scan_type: scanType
             })
         }
         else {
@@ -652,33 +642,35 @@ const editAppointmentApi = async (data) => {
 
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false })
 
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
             const [branch, doctor, client, robot, appointment] = await Promise.all([
                 collections.HealthCenterModel.findOne({ branch_id: data.body.branch_id, client_id: userDetails.client_id }),
-                collections.UserModel.findOne({ user_id: data.body.doctor_id, client_id: userDetails.client_id }, { user_details: 1, _id: 0 })
+                collections.UserModel.findOne({ user_id: data.body.doctor_id, client_id: userDetails.client_id, is_archive: false }, { user_details: 1, _id: 0 })
                     .populate({
                         path: 'user_details',
                         select: '-_id user_name',
                     }),
                 collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, scan_type: 1 }),
                 collections.RobotModel.findOne({ robot_id: data.body.robot_id, branch_id: data.body.branch_id }),
-                collections.AppointmentModel.findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id, is_cancelled: true })
+                collections.AppointmentModel.findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id, is_cancelled: false })
             ])
 
-            if (branch && doctor && client && robot && appointment) {
+            if (branch && doctor && robot && appointment) {
+
+                let isValidScanType = false
+
+                client['scan_type'].forEach((scan) => {
+                    if (scan.is_archive == false && scan.id == data.body.scan_type_id) isValidScanType = true
+                })
+
+                if (!isValidScanType) throw returnStatement(false, "scan type id not found")
 
                 if (!appointment.appointment_status === "up_coming") { throw returnStatement(false, "you can edit only up coming appointments") }
 
                 if (!validateDateTime(data.body.date, data.body.time)) { throw returnStatement(false, "both time and date should be future date value") }
-
-                let scanType = ""
-
-                clientDetails['scan_type'].forEach((scan) => {
-                    if (scan.id == appointment.scan_type_id) scanType = scan.scan_type
-                })
 
                 const editAppointmentParams = {
                     branch_id: data.body.branch_id,
@@ -686,7 +678,7 @@ const editAppointmentApi = async (data) => {
                     doctor_id: data.body.doctor_id,
                     date: data.body.date,
                     time: data.body.time,
-                    scan_type: {scan_type: data.body.scan_type },
+                    scan_type_id: data.body.scan_type_id,
                     differential_diagnosis: data.body.differential_diagnosis
                 }
 
@@ -720,8 +712,7 @@ const editAppointmentApi = async (data) => {
                 throw returnStatement(false,
                     !branch ? "branch id is not found" :
                         !robot ? "robot id is not found" :
-                            !doctor ? "doctor id is not found" :
-                                !appointment ? "appointment id is not found" : " client id not found")
+                            !doctor ? "doctor id is not found" : "appointment id is not found")
             }
         }
         else {
@@ -740,7 +731,7 @@ const rescheduleAppointmentApi = async (data) => {
 
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false })
 
         if (userDetails && (data.body.role_name === role.systemAdmin || data.body.role_name === role.admin)) {
 
