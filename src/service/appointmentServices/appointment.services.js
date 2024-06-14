@@ -623,7 +623,7 @@ const appointmentDetailsApi = async (data) => {
 
             client['scan_type'].forEach((scan) => {
 
-                if (scan.id == appointment.scan_type_id) scanType = scan.scan_type
+                if (scan.id == appointmentDetails.scan_type_id) scanType = scan.scan_type
             })
 
             return returnStatement(true, "appointment details", {
@@ -642,6 +642,7 @@ const appointmentDetailsApi = async (data) => {
         }
     }
     catch (error) {
+        console.log(error);
         if (error.status == false && error.message) { throw error.message }
         else { throw error._message ? error._message : "internal server error" }
     }
