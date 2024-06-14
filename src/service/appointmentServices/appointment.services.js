@@ -541,6 +541,7 @@ const listOfHospitalAppointmentsApi = async (data) => {
                 }
 
                 delete requiredFields.patient_id
+                delete requiredFields.scan_type_id
                 listOfAppointments.push(requiredFields)
             }
             return returnStatement(true, `list of appointment on ${data.body.date}`, listOfAppointments)
