@@ -508,11 +508,12 @@ const listOfHospitalAppointmentsApi = async (data) => {
 
             const appointments = await collections.AppointmentModel
                 .find({ client_id: userDetails.client_id, date: data.body.date, is_cancelled: false },
-                    { appointment_id: 1, scan_type: 1, doctor_id: 1, time: 1, patient_id: 1, _id: 0 })
+                    { appointment_id: 1, scan_type_id: 1, doctor_id: 1, time: 1, patient_id: 1, _id: 0 })
 
             let listOfAppointments = []
 
             for (const appointment of appointments) {
+
                 const patientName = await collections.PatientModel
                     .findOne({ patient_id: appointment.patient_id }, { _id: 0, patient_name: 1 })
 
@@ -523,15 +524,24 @@ const listOfHospitalAppointmentsApi = async (data) => {
                         select: '-_id user_name',
                     })
 
-                if (doctorName && patientName) {
-                    const requiredFields = {
-                        ...appointment._doc,
-                        ...patientName._doc,
-                        doctor_name: doctorName._doc.user_details._doc.user_name,
-                    }
-                    delete requiredFields.patient_id
-                    listOfAppointments.push(requiredFields)
+                const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id })
+
+                let scanType = ""
+
+                clientDetails['scan_type'].forEach((scan) => {
+
+                    if (scan.id == appointment.scan_type_id) scanType = scan.scan_type
+                })
+
+                const requiredFields = {
+                    ...appointment._doc,
+                    ...patientName._doc,
+                    scan_type: scanType,
+                    doctor_name: doctorName._doc.user_details._doc.user_name,
                 }
+
+                delete requiredFields.patient_id
+                listOfAppointments.push(requiredFields)
             }
             return returnStatement(true, `list of appointment on ${data.body.date}`, listOfAppointments)
         }
