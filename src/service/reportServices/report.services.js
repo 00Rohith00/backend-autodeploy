@@ -9,9 +9,9 @@ const patientReportApi = async (data) => {
 
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
 
-        const appointment = await collections.AppointmentModel.findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id })
+        const appointment = await collections.AppointmentModel.findOne({ appointment_id: data.body.appointment_id, client_id: userDetails.client_id, is_cancelled: false })
 
         if (userDetails && appointment && data.body.role_name == role.doctor) {
 
@@ -65,12 +65,12 @@ const listOfReportsApi = async (data) => {
 
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
 
         if (userDetails && data.body.role_name != role.superAdmin) {
 
             const appointments = await collections.AppointmentModel
-                .find({ client_id: userDetails.client_id },
+                .find({ client_id: userDetails.client_id, is_cancelled: false },
                     { appointment_id: 1, scan_type_id: 1, doctor_id: 1, patient_id: 1, _id: 0, is_report_sent: 1 })
 
             let listOfAppointments = []
