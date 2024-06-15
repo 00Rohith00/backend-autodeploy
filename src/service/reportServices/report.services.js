@@ -19,7 +19,9 @@ const patientReportApi = async (data) => {
 
             if (data.route.path.includes('/create-new-report')) {
 
-                if (appointment.is_report_sent) throw returnStatement(false, "report already created for this appointment")
+                const reportCollection = await collections.ReportModel.findOne({ appointment_id: data.body.appointment_id })
+
+                if (reportCollection) throw returnStatement(false, "report already created for this appointment")
 
                 const addReport = await collections.ReportModel.create({
                     appointment_id: data.body.appointment_id,
@@ -28,25 +30,22 @@ const patientReportApi = async (data) => {
                     view_count: 0
                 })
 
-                if (addReport._id) {
+                if (addReport._id) { return returnStatement(true, "Report is created") }
 
-                    await collections.AppointmentModel.findOneAndUpdate(
-                        { client_id: userDetails.client_id, appointment_id: data.body.appointment_id },
-                        { $set: { is_report_sent: true } },
-                        { new: true }
-                    )
-                    return returnStatement(true, "Report is created")
-                }
                 else { throw error }
             }
             else if (data.route.path.includes('/edit-report')) {
 
-                await collections.ReportModel.findOneAndUpdate(
+                const editReport = await collections.ReportModel.findOneAndUpdate(
                     { appointment_id: data.body.appointment_id },
                     { $set: { report_details: data.body.report_details } },
                     { new: true }
                 )
-                return returnStatement(true, "Report is updated")
+
+                if(editReport) return returnStatement(true, "report is updated")
+
+                else throw returnStatement(false, "report not found for this appointment")
+                
             }
         }
         else {
@@ -85,16 +84,16 @@ const listOfReportsApi = async (data) => {
                         path: 'user_details',
                         select: '-_id user_name',
                     })
-              
-                    const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id })
-                    
-                    let scanType = ""
 
-                    clientDetails['scan_type'].forEach((scan) => {
+                const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id })
 
-                        if(scan.id == appointment.scan_type_id) scanType = scan.scan_type
+                let scanType = ""
 
-                    })
+                clientDetails['scan_type'].forEach((scan) => {
+
+                    if (scan.id == appointment.scan_type_id) scanType = scan.scan_type
+
+                })
 
                 const requiredFields = {
                     appointment_id: appointment.appointment_id,
@@ -111,7 +110,7 @@ const listOfReportsApi = async (data) => {
         else {
             throw returnStatement(false,
                 !userDetails ? "user id is not found" :
-                    `${data.body.role_name} user can't able to view list of report`)
+                    `${data.body.role_name} can't able to view list of report`)
         }
     }
     catch (error) {
@@ -125,19 +124,19 @@ const addReportTemplateApi = async (data) => {
 
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
 
-        if (userDetails && ( data.body.role_name == role.doctor || data.body.role_name == role.admin )) {
+        if (userDetails && (data.body.role_name == role.doctor || data.body.role_name == role.admin)) {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id })
 
             clientDetails['templates'].forEach((template) => {
                 if (template.template_name == data.body.template_name) throw returnStatement(false, "given template is already exist")
             })
-            
+
             await collections.HospitalClientModel.findOneAndUpdate(
                 { client_id: userDetails.client_id },
-                { $push: { templates: { id: `${Date.now()}` + Math.round(Math.random()), template_name: data.body.template_name, template: data.body.template } } },
+                { $push: { templates: { id: `${Date.now()}`, template_name: data.body.template_name, template: data.body.template, is_archive: false } } },
                 { new: true }
             )
             return returnStatement(true, "template is added")
@@ -145,7 +144,7 @@ const addReportTemplateApi = async (data) => {
         else {
             throw returnStatement(false,
                 !userDetails ? "user id is not found" :
-                    `${data.body.role_name} user can't able to add new report template`)
+                    `${data.body.role_name} can't able to add new report template`)
         }
 
     }
@@ -160,33 +159,41 @@ const deleteReportTemplateApi = async (data) => {
 
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
 
         if (userDetails && (data.body.role_name == role.doctor || data.body.role_name == role.admin)) {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id })
 
             const promises = clientDetails['templates'].map(async (template) => {
-                if (template.id == data.body.template_id) {
+
+                if (template.id == data.body.template_id && template.is_archive == false) {
                     await collections.HospitalClientModel.findOneAndUpdate(
                         { client_id: userDetails.client_id },
-                        { $pull: { templates: { id: `${data.body.template_id}` } } },
+                        { $pull: { templates: { id: template.id } } },
+                        { new: true }
+                    )
+
+                    await collections.HospitalClientModel.findOneAndUpdate(
+                        { client_id: userDetails.client_id },
+                        { $push: { templates: {id: template.id, template_name: template.template_name, template: template.template ,is_archive: true} } },
                         { new: true }
                     )
                     return true
                 }
             })
+
             const isDeleted = await Promise.all(promises).then(results => { return results.includes(true) })
 
-            if (isDeleted) return returnStatement(true, "given template is deleted")
+            if (isDeleted) return returnStatement(true, "template is deleted")
 
-            else throw returnStatement(false, "template is not found")
+            else throw returnStatement(false, "given template is not found")
         }
 
         else {
             throw returnStatement(false,
                 !userDetails ? "user id is not found" :
-                    `${data.body.role_name} user can't able to delete report template`)
+                    `${data.body.role_name} can't able to delete report template`)
         }
     }
     catch (error) {
@@ -200,19 +207,26 @@ const listOfReportTemplatesApi = async (data) => {
 
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
 
         if (userDetails && (data.body.role_name == role.doctor || data.body.role_name == role.admin)) {
 
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id }, { _id: 0, templates: 1 })
-            
-             return returnStatement(true, "list of templates", clientDetails.templates)
+
+            let listOfTemplates = []
+
+            clientDetails['templates'].forEach((template) => {
+                if (template.is_archive == false)
+                    listOfTemplates.push({ id: template.id, template: template.template, template_name: template.template_name })
+            })
+
+            return returnStatement(true, "list of templates", listOfTemplates)
         }
 
         else {
             throw returnStatement(false,
                 !userDetails ? "user id is not found" :
-                    `${data.body.role_name} user can't able to view list of report template`)
+                    `${data.body.role_name} can't able to view list of report template`)
         }
     }
     catch (error) {
