@@ -71,7 +71,7 @@ const listOfReportsApi = async (data) => {
 
             const appointments = await collections.AppointmentModel
                 .find({ client_id: userDetails.client_id },
-                    { appointment_id: 1, scan_type: 1, doctor_id: 1, patient_id: 1, _id: 0, is_report_sent: 1 })
+                    { appointment_id: 1, scan_type_id: 1, doctor_id: 1, patient_id: 1, _id: 0, is_report_sent: 1 })
 
             let listOfAppointments = []
 
@@ -85,9 +85,20 @@ const listOfReportsApi = async (data) => {
                         path: 'user_details',
                         select: '-_id user_name',
                     })
+              
+                    const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id })
+                    
+                    let scanType = ""
+
+                    clientDetails['scan_type'].forEach((scan) => {
+
+                        if(scan.id == appointment.scan_type_id) scanType = scan.scan_type
+
+                    })
+
                 const requiredFields = {
                     appointment_id: appointment.appointment_id,
-                    scan_type: appointment.scan_type,
+                    scan_type: scanType,
                     report_status: appointment.is_report_sent,
                     doctor_name: doctorName._doc.user_details._doc.user_name,
                     patient_name: patientName.patient_name
