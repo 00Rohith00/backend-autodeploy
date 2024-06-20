@@ -18,7 +18,7 @@ const listOfRobotsApi = async (data) => {
 
             const promises = branchDetails.map(async (branch) => {
 
-                const robotDetails = await collections.RobotModel.find({ branch_id: branch.branch_id }, { robot_id: 1, robot_registration_id: 1, under_maintenance: 1 })
+                const robotDetails = await collections.RobotModel.find({ branch_id: branch.branch_id }, { robot_id: 1, robot_registration_id: 1, under_maintenance: 1, _id:0 })
 
                 if (robotDetails.length != 0) {
 

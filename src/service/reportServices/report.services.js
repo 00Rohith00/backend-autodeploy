@@ -131,7 +131,7 @@ const addReportTemplateApi = async (data) => {
             const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id })
 
             clientDetails['templates'].forEach((template) => {
-                if (template.template_name == data.body.template_name) throw returnStatement(false, "given template is already exist")
+                if (template.template_name == data.body.template_name && template.is_archive == false) throw returnStatement(false, "given template is already exist")
             })
 
             await collections.HospitalClientModel.findOneAndUpdate(
