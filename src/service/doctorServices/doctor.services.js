@@ -25,6 +25,8 @@ const listOfDoctorsApi = async (data) => {
 
         if (userDetails && (data.body.role_name === role.admin || data.body.role_name === role.systemAdmin)) {
 
+            const clientDetails = await collections.HospitalClientModel.findOne({ client_id: userDetails.client_id })
+
             const listOfUser = await collections.UserModel.find({
                 client_id: userDetails.client_id,
                 created_by: { $ne: null },
@@ -36,7 +38,7 @@ const listOfDoctorsApi = async (data) => {
                     select: 'user_contact_number user_name -_id',
                     populate: {
                         path: 'doctor',
-                        select: '-_id doctor_department'
+                        select: '-_id department_id'
                     }
                 })
 
@@ -45,10 +47,17 @@ const listOfDoctorsApi = async (data) => {
             listOfUser.forEach((user) => {
 
                 if (user.user_details.doctor) {
+
+                    var departmentName = ""
+
+                    clientDetails['department'].forEach((department) => {
+                        if (department.id == user.user_details.doctor.department_id) departmentName = department.department
+                })
+
                     listOfDoctors.push({
                         doctor_id: user.user_id,
                         doctor_name: user.user_details.user_name,
-                        department: user.user_details.doctor.doctor_department,
+                        department: departmentName,
                         mobile_number: user.user_details.user_contact_number,
                     })
                 }
@@ -164,7 +173,7 @@ const editDoctorDetailsApi = async (data) => {
                     select: 'user_name user_email_id user_contact_number user_age user_gender -_id user_location',
                     populate: {
                         path: 'doctor',
-                        select: '-_id doctor_department doctor_registration_id mbbs_completed_year time_from time_to'
+                        select: '-_id department_id doctor_registration_id mbbs_completed_year time_from time_to'
                     }
                 })
         ])

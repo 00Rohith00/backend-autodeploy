@@ -406,7 +406,10 @@ const createNewAppointmentApi = async (data) => {
                     appointment_type: "normal_appointment",
                     created_by: data.body.user_id,
                     is_report_sent: false,
-                    call_url: await videoCallApi(conferenceInfo),
+                    call_url: {
+                        meetingUrl: "video call",
+                        moderatorUrl: "video call",
+                    },   // await videoCallApi(conferenceInfo)
                     action_required: false,
                     is_cancelled: false
                 }
@@ -642,7 +645,6 @@ const appointmentDetailsApi = async (data) => {
         }
     }
     catch (error) {
-        console.log(error);
         if (error.status == false && error.message) { throw error.message }
         else { throw error._message ? error._message : "internal server error" }
     }
