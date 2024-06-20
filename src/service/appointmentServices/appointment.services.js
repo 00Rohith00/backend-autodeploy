@@ -722,7 +722,10 @@ const editAppointmentApi = async (data) => {
                     appointment_time: convertTimeTo24HourFormat(data.body.time)
                 }
 
-                editAppointmentParams.call_url = await videoCallApi(conferenceInfo)
+                editAppointmentParams.call_url = {
+                    meetingUrl: "video call",
+                    moderatorUrl: "video call",
+                }
 
                 const appointmentDetails = await collections.AppointmentModel
                     .findOneAndUpdate({ appointment_id: data.body.appointment_id },
@@ -769,7 +772,10 @@ const rescheduleAppointmentApi = async (data) => {
                     appointment_time: convertTimeTo24HourFormat(data.body.time)
                 }
 
-                const callUrl = await videoCallApi(conferenceInfo)
+                const callUrl = {
+                    meetingUrl: "video call",
+                    moderatorUrl: "video call",
+                }
 
                 const appointmentDetails = await collections.AppointmentModel
                     .findOneAndUpdate({ appointment_id: data.body.appointment_id },
