@@ -663,7 +663,7 @@ const createNewAppointmentApi = (request, response, next) => {
         patient_email_id: joi.string().email().optional()
     }
 
-    if (!(request.body.user_gender == 'male' || request.body.user_gender == 'female')) {
+    if (!(request.body.patient_gender == 'male' || request.body.patient_gender == 'female')) {
         failResponse(response, { status: false, message: "invalid gender name" })
     }
 
@@ -671,7 +671,6 @@ const createNewAppointmentApi = (request, response, next) => {
 
         patient_mobile_number: request.body.patient_mobile_number,
         patient_name: request.body.patient_name,
-        patient_gender: request.body.patient_gender,
         patient_age: request.body.patient_age,
         patient_pin_code: request.body.patient_pin_code,
         branch_id: request.body.branch_id,
