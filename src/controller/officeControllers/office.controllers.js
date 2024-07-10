@@ -44,5 +44,6 @@ const createNewSuperAdminApi = async (request, response) => {
 }
 
 
-export default { createNewClientApi, createNewSuperAdminApi }
- 
+export default {
+    createNewClientApi, createNewSuperAdminApi
+}

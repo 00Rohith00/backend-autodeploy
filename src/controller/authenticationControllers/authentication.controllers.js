@@ -8,7 +8,7 @@ import { okResponse, failResponse } from "../../utils/response.handle.js"
  * @param {Object} response - The response object used to send the result of the API call.
  * @return {Promise<void>} A Promise that resolves when the API call is complete.
  */
-const isExistingUserApi = async (request, response) => { 
+const isExistingUserApi = async (request, response) => {
   try {
     const result = await services.isExistingUserApi(request)
     if (result) {
@@ -67,6 +67,14 @@ const userLoginApi = async (request, response) => {
 }
 
 
+/**
+ * This function sends an OTP to user if the user forget the password and sends through the API based on the
+ * provided request and logs the result.
+ *
+ * @param {Object} request - The request object containing the data needed to send the OTP.
+ * @param {Object} response - The response object used to send the result of the API call.
+ * @return {Promise<void>} A Promise that resolves when the API call is complete.
+ */
 const sendOtpApi = async (request, response) => {
   try {
     const result = await services.sendOtpApi(request)
@@ -82,6 +90,14 @@ const sendOtpApi = async (request, response) => {
 }
 
 
+/**
+ * This function check whether the user provided OTP is valid or not and sends through the API based on the
+ * provided request and logs the result.
+ *
+ * @param {Object} request - The request object containing the OTP data to be verified.
+ * @param {Object} response - The response object used to send the result of the verification.
+ * @return {Promise<void>} A Promise that resolves when the OTP verification is complete.
+ */
 const verifyOtpApi = async (request, response) => {
   try {
     const result = await services.verifyOtpApi(request)

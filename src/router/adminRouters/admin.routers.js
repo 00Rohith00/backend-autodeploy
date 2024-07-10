@@ -1,10 +1,8 @@
-import { router } from "../../../server.js"
-
+import express from "express"
 import middleware from "../adminRouters/import.js"
 import controller from "../../controller/adminControllers/admin.controllers.js"
 
-
-const adminRouters = router
+const adminRouters = express.Router()
 
 //post routers
 adminRouters.post("/create-new-system-admin", middleware.createNewSystemAdminApi, controller.createNewSystemAdminApi)

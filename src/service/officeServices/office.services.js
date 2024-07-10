@@ -14,6 +14,7 @@ import { returnStatement } from "../../utils/return.handler.js"
  * This office module, responsible for creating new clients in the HospitalClientModel collection, 
  * has been developed by our development team and is managed by our dedicated support team.
  * 
+ * @function createNewClientApi
  * @param {Object} data - An object containing the details of the client to be created.
  * @param {string} data.body.hospital_name - The name of the hospital.
  * @param {string} data.body.logo_url - The URL of the hospital's logo.
@@ -25,8 +26,6 @@ import { returnStatement } from "../../utils/return.handler.js"
  * Otherwise, the status is false and the message is "Internal server error".
  * @throws {Error} If the client is not created, an empty error is thrown.
  */
-
-
 const createNewClientApi = async (data) => {
 
     try {
@@ -41,7 +40,7 @@ const createNewClientApi = async (data) => {
             let scanType = []
             data.body.scan_type.forEach((scan, index) => {
                 scanType.push({
-                    id: Date.now() + `${index}`,
+                    id: Date.now() + index,
                     scan_type: scan,
                     is_archive: false
                 })
@@ -54,7 +53,7 @@ const createNewClientApi = async (data) => {
             let departmentName = []
             data.body.department.forEach((department, index) => {
                 departmentName.push({
-                    id: Date.now() + `${index}`,
+                    id: Date.now() + index,
                     department: department,
                     is_archive: false
                 })
@@ -88,6 +87,7 @@ const createNewClientApi = async (data) => {
  * This office module, responsible for creating new super admin in the User collection,  
  * has been developed by our development team and is managed by our dedicated support team.
  *
+ * @function createNewSuperAdminApi
  * @param {Object} data - An object containing the details of the super admin.
  * @param {string} data.body.client_id - The client ID of the hospital.
  * @param {string} data.body.user_name - The name of the super admin.
@@ -101,7 +101,6 @@ const createNewClientApi = async (data) => {
  * 
  * @throws {Error} - Throws an Error if the super admin creation fails.
  */
-
 const createNewSuperAdminApi = async (data) => {
 
     const superAdminRollBackParams = {}
@@ -191,6 +190,8 @@ const createNewSuperAdminApi = async (data) => {
 }
 
 
-export default { createNewClientApi, createNewSuperAdminApi }
+export default {
+    createNewClientApi, createNewSuperAdminApi
+}
 
 

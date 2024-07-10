@@ -1,6 +1,4 @@
-import seeder from '../../service/devServices/devSeederServices/seeder.js'
-import clearData from '../../service/devServices/devSeederServices/clear.data.js'
-
+import services from '../../service/devServices/dev.services.js'
 import { okResponse, failResponse } from '../../utils/response.handle.js'
 
 /**
@@ -13,7 +11,7 @@ import { okResponse, failResponse } from '../../utils/response.handle.js'
 
 const seedDataApi = async (request, response) => {
     try {
-        const result = await seeder.seedDataApi(request)
+        const result = await services.seedDataApi(request)
         if (result) {
             //write in success-logger database
             okResponse(response, result)
@@ -34,7 +32,7 @@ const seedDataApi = async (request, response) => {
  */
 const clearDataApi = async (request, response) => {
     try {
-        const result = await clearData.clearDataApi(request)
+        const result = await services.clearDataApi(request)
         if (result) {
             //write in success-logger database
             okResponse(response, result)
@@ -44,6 +42,4 @@ const clearDataApi = async (request, response) => {
     }
 }
 
-export default {
-    seedDataApi, clearDataApi
-}
+export default { seedDataApi, clearDataApi }

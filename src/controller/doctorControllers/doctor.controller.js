@@ -2,7 +2,7 @@ import services from "../../service/doctorServices/doctor.services.js"
 import { okResponse, failResponse } from "../../utils/response.handle.js"
 
 /**
- * This function retrieves a list of doctors from the API and sends the result as a response.
+ * Admin retrieves a list of doctors from the API and sends the result as a response.
  *
  * @param {Object} request - The request object containing the necessary data for the API call.
  * @param {Object} response - The response object used to send the result of the API call.
@@ -21,8 +21,9 @@ const listOfDoctorsApi = async (request, response) => {
     }
 }
 
+
 /**
- * Asynchronously retrieves doctor details from the API and sends the result as a response.
+ * Admin retrieves doctor details from the API and sends the result as a response.
  *
  * @param {Object} request - The request object containing the necessary data for the API call.
  * @param {Object} response - The response object used to send the result of the API call.
@@ -41,8 +42,9 @@ const doctorDetailsApi = async (request, response) => {
     }
 }
 
+
 /**
- * Asynchronously edits doctor details from the API and sends the result as a response.
+ * Admin edits doctor details from the API and sends the result as a response.
  *
  * @param {Object} request - The request object containing the necessary data for the API call.
  * @param {Object} response - The response object used to send the result of the API call.
@@ -62,6 +64,13 @@ const editDoctorDetailsApi = async (request, response) => {
 }
 
 
+/**
+ * Admin retrieves a list of departments from the API and sends the result as a response.
+ *
+ * @param {Object} request - The request object containing the necessary data for the API call.
+ * @param {Object} response - The response object used to send the result of the API call.
+ * @return {Promise<void>} A Promise that resolves when the API call is complete.
+ */
 const listOfDepartmentsApi = async (request, response) => {
     try {
         const result = await services.listOfDepartmentsApi(request)
@@ -76,4 +85,7 @@ const listOfDepartmentsApi = async (request, response) => {
 }
 
 
-export default { listOfDoctorsApi, doctorDetailsApi, editDoctorDetailsApi, listOfDepartmentsApi }
+export default {
+    listOfDoctorsApi, doctorDetailsApi,
+    editDoctorDetailsApi, listOfDepartmentsApi
+}

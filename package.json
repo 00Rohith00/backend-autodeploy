@@ -17,6 +17,7 @@
     "lodash.debounce": "^4.0.8",
     "mongoose": "^8.2.4",
     "mongoose-sequence": "^6.0.1",
+    "node-cron": "^3.0.3",
     "uuid": "^9.0.1",
     "xss": "^1.0.15"
   },

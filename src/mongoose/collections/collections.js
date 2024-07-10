@@ -5,20 +5,16 @@ const AutoIncrementPlugin = AutoIncrement(mongoose)
 
 /**
  * Represents the details of a hospital client.
- * @typedef {Object} HospitalClientDetails
+ * @type {Object} HospitalClientDetails
  * @property {number} client_id - The unique identifier of the client.
  * @property {string} hospital_name - The name of the hospital.
  * @property {string} logo_url - The URL of the hospital's logo.
  * @property {string} domain_url - The domain URL of the hospital.
  * @property {Array<string>} scan_type - An array of scan types offered by the hospital.
  */
-/**
- * Hospital client details object.
- * @type {HospitalClientDetails}
- */
 const hospitalClientSchema = new mongoose.Schema({
     client_id: { type: Number, unique: true },
-    hospital_name: { type: String,  unique: true, required: true },
+    hospital_name: { type: String, unique: true, required: true },
     logo_url: { type: String, required: true },
     domain_url: { type: String, required: true },
     scan_type: { type: Array },
@@ -39,7 +35,7 @@ const HospitalClientModel = mongoose.model("hospital_client", hospitalClientSche
 
 /**
  * Represents the details of a user.
- * @typedef {Object} User
+ * @type {Object} User
  * @property {number} user_id - The unique identifier of the user.
  * @property {number} client_id - The client ID associated with the user.
  * @property {number} [branch_id] - The branch ID associated with the user.
@@ -51,10 +47,6 @@ const HospitalClientModel = mongoose.model("hospital_client", hospitalClientSche
  * @property {number} [created_by] - The user ID of the creator.
  * @property {Date} createdAt - The timestamp when the user was created.
  * @property {Date} updatedAt - The timestamp when the user was last updated.
- */
-/**
- * User schema object.
- * @type {User}
  */
 const userSchema = new mongoose.Schema({
     user_id: { type: Number, unique: true },
@@ -80,7 +72,7 @@ const UserModel = mongoose.model("user", userSchema)
 
 /**
  * Represents the details of a new user.
- * @typedef {Object} UserDetails
+ * @type {Object} UserDetails
  * @property {string} user_name - The name of the user.
  * @property {string} user_email_id - The email id of the user.
  * @property {string} user_contact_number - The contact number of the user.
@@ -88,18 +80,14 @@ const UserModel = mongoose.model("user", userSchema)
  * @property {number} user_pin_code - The pin code of the user.
  * @property {string} doctor - The ID of the associated doctor.
  */
-/**
- * New user details object.
- * @type {UserDetails}
- */
 const userDetailSchema = new mongoose.Schema({
     user_name: { type: String, required: true },
     user_email_id: { type: String, required: true, unique: true },
     user_contact_number: { type: String, required: true },
     user_location: { type: String, required: true },
     user_pin_code: { type: Number, required: true },
-    user_gender: {type: String, required: true},
-    user_age: {type: Number, required: true},
+    user_gender: { type: String, required: true },
+    user_age: { type: Number, required: true },
     doctor: { type: mongoose.SchemaTypes.ObjectId, ref: 'doctor' },
 }, { timestamps: true }, { versionKey: false })
 /**
@@ -111,13 +99,9 @@ const UserDetailModel = mongoose.model("user_details", userDetailSchema)
 
 /**
  * Represents the details of a user role.
- * @typedef {Object} UserRoleDetails
+ * @type {Object} UserRoleDetails
  * @property {number} role_id - The ID of the role.
  * @property {string} role_name - The name of the role.
- */
-/**
- * User role details object.
- * @type {UserRoleDetails}
  */
 const userRoleSchema = new mongoose.Schema({
     role_id: { type: Number, required: true },
@@ -129,20 +113,19 @@ const userRoleSchema = new mongoose.Schema({
  */
 const UserRoleModel = mongoose.model("user_roles", userRoleSchema)
 
-
+const password = {
+    current_password: { type: String },
+    old_password: { type: Array },
+}
 
 /**
  * Represents the details of a user login.
- * @typedef {Object} UserLoginDetails
+ * @type {Object} UserLoginDetails
  * @property {string} password - The password of the user.
  * @property {number} update_count - The number of times the user login has been updated.
  */
-/**
- * User login schema.
- * @type {UserLoginDetails}
- */
 const userLoginSchema = new mongoose.Schema({
-    password: { type: String },
+    password: password,
     update_count: { type: Number, required: true },
 }, { timestamps: true }, { versionKey: false })
 /**
@@ -155,17 +138,13 @@ const UserLoginModel = mongoose.model("user_login", userLoginSchema)
 
 /**
  * Represents the details of a new doctor.
- * @typedef {Object} DoctorDetails
+ * @type {Object} DoctorDetails
  * @property {string} doctor_registration_id - The registration ID of the doctor.
  * @property {string} mbbs_completed_year - The year the doctor completed MBBS.
  * @property {string} doctor_department - The department the doctor belongs to.
  * @property {string} [time_from] - The start time of availability.
  * @property {string} [time_to] - The end time of availability.
  * @property {boolean} is_approved - Indicates if the doctor is approved.
- */
-/**
- * New doctor details object.
- * @type {DoctorDetails}
  */
 const doctorSchema = new mongoose.Schema({
     doctor_registration_id: { type: String, required: true, unique: true },
@@ -183,6 +162,8 @@ const DoctorModel = mongoose.model("doctor", doctorSchema)
 
 
 /** 
+ * Represents a call URL for an appointment.
+ * 
  * @property {Object} call_url - The URLs for the appointment call.
  * @property {string} call_url.meetingUrl - The meeting URL.
  * @property {string} call_url.moderatorUrl - The moderator URL.
@@ -194,7 +175,7 @@ const callUrl = {
 /**
  * Represents the details of a new appointment.
  * 
- * @typedef {Object} NewAppointmentDetails
+ * @type {Object} NewAppointmentDetails
  * @property {number} appointment_id - The ID of the appointment.
  * @property {number} client_id - The ID of the client.
  * @property {string} op_id - The ID of the operation.
@@ -213,10 +194,6 @@ const callUrl = {
  * @property {number} created_by - The ID of the user who created the appointment.
  * @property {boolean} is_report_sent - Indicates if the report is sent for the appointment.
  */
-/**
- * New appointment details object.
- * @type {NewAppointmentDetails}
- */
 const appointmentSchema = new mongoose.Schema({
     appointment_id: { type: Number, unique: true },
     client_id: { type: Number, required: true },
@@ -232,6 +209,7 @@ const appointmentSchema = new mongoose.Schema({
     appointment_status: { type: String, required: true },
     appointment_type: { type: String, required: true },
     created_by: { type: Number, required: true },
+    action_required: { type: Boolean, required: true }, 
     is_report_sent: { type: Boolean, required: true },
     is_cancelled: { type: Boolean, required: true },
     call_url: callUrl,
@@ -247,9 +225,11 @@ appointmentSchema.plugin(AutoIncrementPlugin, { inc_field: 'appointment_id' })
 const AppointmentModel = mongoose.model("appointment", appointmentSchema)
 
 
+
 /**
  * Represents the details of a health center.
- * @typedef {Object} HealthCenterDetails
+ * 
+ * @type {Object} HealthCenterDetails
  * @property {number} branch_id - The branch ID of the health center.
  * @property {number} client_id - The client ID of the health center.
  * @property {string} branch_name - The name of the health center branch.
@@ -260,10 +240,6 @@ const AppointmentModel = mongoose.model("appointment", appointmentSchema)
  * @property {number} created_by - The ID of the user who created the health center branch.
  * @property {Date} createdAt - The timestamp when the health center branch was created.
  * @property {Date} updatedAt - The timestamp when the health center branch was last updated.
- */
-/**
- * Health center details object.
- * @type {HealthCenterDetails}
  */
 const healthCenterSchema = new mongoose.Schema({
     branch_id: { type: Number, unique: true },
@@ -288,16 +264,13 @@ const HealthCenterModel = mongoose.model("health_center", healthCenterSchema)
 
 /**
  * Represents the details of a robot.
- * @typedef {Object} RobotDetails
+ * 
+ * @type {Object} RobotDetails
  * @property {number} robot_id - The ID of the robot.
  * @property {string} robot_registration_id - The registration ID of the robot.
  * @property {number} branch_id - The ID of the branch the robot belongs to.
  * @property {boolean} under_maintenance - Indicates whether the robot is under maintenance.
  * @property {number} created_by - The ID of the user who created the robot.
- */
-/**
- * Robot details object.
- * @type {RobotDetails}
  */
 const robotSchema = new mongoose.Schema({
     robot_id: { type: Number, unique: true },
@@ -317,9 +290,11 @@ robotSchema.plugin(AutoIncrementPlugin, { inc_field: 'robot_id' })
 const RobotModel = mongoose.model("robot", robotSchema)
 
 
+
 /**
  * Represents the details of an emergency appointment.
- * @typedef {Object} EmergencyAppointmentDetails
+ * 
+ * @type {Object} EmergencyAppointmentDetails
  * @property {number} emergencyAppointment_id - The ID of the emergency appointment.
  * @property {number} branch_id - The ID of the branch where the appointment is made.
  * @property {number} robot_id - The ID of the robot assigned to the appointment.
@@ -327,10 +302,6 @@ const RobotModel = mongoose.model("robot", robotSchema)
  * @property {boolean} is_claimed - Indicates if the appointment is claimed.
  * @property {number} claimed_by - The ID of the user who claimed the appointment.
  * @property {number} created_by - The ID of the user who created the appointment.
- */
-/**
- * Emergency appointment details object.
- * @type {EmergencyAppointmentDetails}
  */
 const emergencyAppointmentSchema = new mongoose.Schema({
     emergencyAppointment_id: { type: Number, unique: true },
@@ -352,9 +323,11 @@ emergencyAppointmentSchema.plugin(AutoIncrementPlugin, { inc_field: 'emergencyAp
 const EmergencyAppointmentModel = mongoose.model("emergency_appointment", emergencyAppointmentSchema)
 
 
+
 /**
  * Represents the details of a new patient.
- * @typedef {Object} PatientDetails
+ * 
+ * @type {Object} PatientDetails
  * @property {number} client_id - The client ID.
  * @property {string} [op_id] - The OP ID (Optional).
  * @property {number} patient_mobile_number - The mobile number of the patient.
@@ -366,10 +339,6 @@ const EmergencyAppointmentModel = mongoose.model("emergency_appointment", emerge
  * @property {string} [electronic_id] - The electronic ID of the patient (Optional).
  * @property {boolean} action_required - Indicates if action is required for the patient.
  */
-/**
- * New patient details object.
- * @type {PatientDetails}
- */
 const patientSchema = new mongoose.Schema({
     patient_id: { type: Number, unique: true },
     client_id: { type: Number, required: true },
@@ -380,7 +349,7 @@ const patientSchema = new mongoose.Schema({
     patient_gender: { type: String, required: true },
     patient_age: { type: Number, required: true },
     patient_pin_code: { type: Number, required: true },
-    patient_address: {type: String },
+    patient_address: { type: String },
     electronic_id: { type: String },
     action_required: { type: Boolean, required: true },
     created_by: { type: Number, required: true },
@@ -398,13 +367,9 @@ const PatientModel = mongoose.model("patient", patientSchema)
 
 /**
  * Represents the details of a user undergoing onboarding for OTP verification.
- * @typedef {Object} OnBoardingForOTPDetails
+ * @type {Object} OnBoardingForOTPDetails
  * @property {string} user_email_id - The email id of the user.
  * @property {boolean} is_email_sent - Indicates whether the email for OTP verification has been sent.
- */
-/**
- * Schema for user onboarding for OTP verification.
- * @type {OnBoardingForOTPDetails}
  */
 const onBoardingSchema = new mongoose.Schema({
     user_email_id: { type: String, required: true },
@@ -416,16 +381,15 @@ const onBoardingSchema = new mongoose.Schema({
  */
 const OnBoardingModel = mongoose.model("onBoarding", onBoardingSchema)
 
+
+
 /**
  * Represents the details of an OTP.
- * @typedef {Object} OTPDetails
+ * 
+ * @type {Object} OTPDetails
  * @property {string} user_email_id - The email id of the user.
  * @property {number} otp - The OTP (One Time Password).
  * @property {Date} expiry_date_time - The expiry date and time of the OTP.
- */
-/**
- * OTP schema.
- * @type {OTPDetails}
  */
 const otpSchema = new mongoose.Schema({
     user_email_id: { type: String, required: true },
@@ -438,17 +402,16 @@ const otpSchema = new mongoose.Schema({
 const OtpModel = mongoose.model("otp", otpSchema)
 
 
+
 /**
  * Represents the details of a new report.
- * @typedef {Object} ReportDetails
+ * 
+ * @type {Object} ReportDetails
  * @property {number} patient_id - The ID of the patient.
+ * @property {number} appointment_id - The ID of the appointment.
  * @property {string} report_details - The details of the report.
  * @property {number} created_by - The ID of the creator of the report.
  * @property {number} view_count - The count of views for the report.
- */
-/**
- * New report details object.
- * @type {ReportDetails}
  */
 const reportSchema = new mongoose.Schema({
     report_id: { type: Number, unique: true },
@@ -467,7 +430,8 @@ reportSchema.plugin(AutoIncrementPlugin, { inc_field: 'report_id' })
  */
 const ReportModel = mongoose.model("report", reportSchema)
 
-    
+
+
 export default {
     HospitalClientModel, UserModel,
     UserDetailModel, UserRoleModel,

@@ -9,18 +9,22 @@ import { returnStatement } from "../../utils/return.handler.js"
  * If successful, it returns a Promise that resolves to a boolean indicating success or failure along with a message. 
  * If any error occurs during the process, it throws an error message. 
  *
+ * @function createNewSystemAdminApi
  * @param {Object} data - The data containing the details of the new system admin.
  * @param {Object} data.body - The body of the request containing the details of the new system admin.
+ * 
  * @param {string} data.body.user_id - The ID of the user creating the new system admin.
- * @param {string} data.body.branch_id - The ID of the branch the new system admin belongs to.
  * @param {string} data.body.user_name - The name of the new system admin.
  * @param {string} data.body.user_email_id - The email ID of the new system admin.
  * @param {string} data.body.user_contact_number - The contact number of the new system admin.
  * @param {string} data.body.user_location - The location of the new system admin.
  * @param {string} data.body.user_age - The age  of the new system admin.
  * @param {string} data.body.user_pin_code - The pin code of the new system admin.
+ * 
+ * @param {string} data.body.branch_id - The ID of the branch the new system admin belongs to.
  * @param {string} data.body.role_name - The role name of the new system admin.
  * @param {string} data.body.image_url - The URL of the image of the new system admin.
+ * 
  * @return {Promise<Object>} A promise that resolves to an object indicating the success or failure of the operation.
  * @throws {string} If an error occurs during the creation of the new system admin, an error message is thrown.
  */
@@ -128,23 +132,27 @@ const createNewSystemAdminApi = async (data) => {
  * department, schedule timings, approval status, name, email, contact number, location, pin code, role name, and image URL of the 
  * new doctor. The function returns a Promise that resolves to an object indicating the success or failure of the operation. 
  * If any error occurs during the creation process, an error message is thrown.
- *
+ * 
+ * @function createNewDoctorApi
  * @param {Object} data - The data object containing the details of the new doctor.
  * @param {Object} data.body - The body object containing the details of the new doctor.
+ * 
  * @param {string} data.body.user_id - The ID of the user creating the new doctor.
- * @param {string} data.body.doctor_registration_id - The registration ID of the new doctor.
- * @param {string} data.body.mbbs_completed_year - The year the new doctor completed MBBS.
- * @param {string} data.body.doctor_department - The department of the new doctor.
- * @param {string} data.body.time_from - The start time of the new doctor's schedule.
- * @param {string} data.body.time_to - The end time of the new doctor's schedule.
- * @param {boolean} data.body.is_approved - The approval status of the new doctor.
  * @param {string} data.body.user_name - The name of the new doctor.
  * @param {string} data.body.user_email_id - The email ID of the new doctor.
  * @param {string} data.body.user_contact_number - The contact number of the new doctor.
  * @param {string} data.body.user_location - The location of the new doctor.
  * @param {string} data.body.user_pin_code - The pin code of the new doctor.
+ * 
+ * @param {string} data.body.doctor_registration_id - The registration ID of the new doctor.
+ * @param {string} data.body.mbbs_completed_year - The year the new doctor completed MBBS.
+ * @param {string} data.body.doctor_department - The department of the new doctor.
+ * @param {boolean} data.body.is_approved - The approval status of the new doctor.
+ * @param {string} data.body.time_from - The start time of the new doctor's schedule.
+ * @param {string} data.body.time_to - The end time of the new doctor's schedule.
  * @param {string} data.body.role_name - The role name of the new doctor.
  * @param {string} data.body.image_url - The URL of the image of the new doctor.
+ * 
  * @return {Promise<Object>} A promise that resolves to an object indicating the success or failure of the operation.
  * @throws {string} If an error occurs during the creation of the new doctor, an error message is thrown.
  */
@@ -242,7 +250,6 @@ const createNewDoctorApi = async (data) => {
     }
   }
   catch (error) {
-    console.log(error);
     rollBack(doctorRollBackPrams)
     if (error.status == false && error.message) { throw error.message }
     else { throw error._message ? error._message : "internal server error" }

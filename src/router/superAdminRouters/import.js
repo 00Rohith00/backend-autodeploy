@@ -9,12 +9,15 @@ const superAdminCommonMiddlewares = [apiLogger, tokenVerification]
 const createNewAdminApi = [...superAdminCommonMiddlewares, validation.createNewUserApi]
 const createNewHealthCenterApi = [...superAdminCommonMiddlewares, validation.createNewHealthCenterApi]
 const createNewRobotApi = [...superAdminCommonMiddlewares, validation.createNewRobotApi]
+
 const addNewScanApi = [...superAdminCommonMiddlewares, validation.addScanType]
-const deleteScanApi = [...superAdminCommonMiddlewares, validation.deleteScanType]
 const addNewDepartmentApi = [...superAdminCommonMiddlewares, validation.addDepartment]
+
 const deleteDepartmentApi = [...superAdminCommonMiddlewares, validation.deleteDepartment]
+const deleteScanApi = [...superAdminCommonMiddlewares, validation.deleteScanType]
 
 export default {
-    createNewAdminApi, createNewHealthCenterApi, createNewRobotApi,
-    addNewScanApi, deleteScanApi, addNewDepartmentApi, deleteDepartmentApi
+    createNewAdminApi, createNewHealthCenterApi,
+    createNewRobotApi, addNewScanApi, deleteScanApi,
+    addNewDepartmentApi, deleteDepartmentApi
 }

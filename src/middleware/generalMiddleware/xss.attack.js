@@ -4,6 +4,7 @@ import { UnprocessableEntity, failResponse } from '../../helper/response.handle.
 /**
  * Middleware function to sanitize request body against XSS attacks.
  *
+ * @function xssSanitization
  * @param {Object} request - The request object.
  * @param {Object} response - The response object.
  * @param {Function} next - The next middleware function.
@@ -48,6 +49,7 @@ export const xssSanitization = (request, response, next) => {
 /**
  * Checks if the object contains script tags recursively.
  *
+ * @function containsScriptTags
  * @param {Object} obj - The object to check for script tags.
  * @return {boolean} True if script tags are found, false otherwise.
  */
@@ -68,6 +70,7 @@ const containsScriptTags = (obj) => {
 /**
  * Recursively sanitizes an object against XSS attacks based on provided options.
  *
+ * @function sanitizeObject
  * @param {Object} obj - The object to sanitize.
  * @param {Object} xssOptions - The options for XSS sanitization.
  * @return {Object} The sanitized object.

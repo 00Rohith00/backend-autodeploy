@@ -82,5 +82,6 @@ const previousHistoryApi = async (request, response) => {
 }
 
 export default {
-    createNewPatientsApi, listOfPatientsApi,  previousHistoryApi, editPatientDetailsApi
+    createNewPatientsApi, listOfPatientsApi,
+    previousHistoryApi, editPatientDetailsApi
 }

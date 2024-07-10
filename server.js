@@ -15,12 +15,6 @@ import { apiLimiter } from './src/middleware/throttle/avoid.throttle.js'
  */
 export const application = express()
 
-/**
- * The Express router instance.
- * @type {express.Router}
- */
-export const router = express.Router()
-
 // Enable CORS
 application.use(cors())
 

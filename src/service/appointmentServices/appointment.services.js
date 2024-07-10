@@ -1,8 +1,9 @@
 import { collections } from "../../mongoose/index.mongoose.js"
-import { videoCallApi } from "../microServices/videoCall.js"
+import { videoCallApi } from "../microServices/video.call.js"
 import { role } from "../../config/config.js"
-import { returnStatement } from "../../utils/return.handler.js"
+
 import { convertTimeTo24HourFormat, validateDateTime } from "../../utils/date.time.js"
+import { returnStatement } from "../../utils/return.handler.js"
 
 /**
  * Admin retrieves patient information from the database based on the provided data. This function takes in a data object containing 
@@ -11,7 +12,7 @@ import { convertTimeTo24HourFormat, validateDateTime } from "../../utils/date.ti
  * status, message, and a list of patient details. If the user details or user ID are not found, it throws an object with status 
  * and message properties. If an internal server error occurs during the process, it throws a string with the error message.
  *
- * 
+ * @function searchPatientInformationApi
  * @param {Object} data - The data object containing the user ID, client ID, and patient mobile number.
  * @param {string} data.body.user_id - The ID of the user.
  * @param {string} data.body.client_id - The ID of the client.
@@ -63,6 +64,7 @@ const searchPatientInformationApi = async (data) => {
  * and fetches a list of scan types associated with the user's role.It returns a Promise that resolves to an object containing
  * the list of scan types.
  *
+ * @function listOfScanTypesApi
  * @param {string} data.body.user_id - The ID of the user.
  * @param {string} data.body.role_name - The role name of the user.
  * @return {Promise<Object>} A promise that resolves to an object containing the list of scan types.
@@ -106,6 +108,7 @@ const listOfScanTypesApi = async (data) => {
  * on the provided user data. If successful, it returns a Promise that resolves to an object containing the list of doctors. 
  * If the user details are not found or the user does not have the required role, it throws an Error.
  * 
+ * @function listOfHospitalDoctorsApi
  * @param {Object} data - The user data containing the user ID and role name.
  * @param {string} data.body.user_id - The ID of the user.
  * @param {string} data.body.role_name - The role name of the user.
@@ -174,6 +177,7 @@ const listOfHospitalDoctorsApi = async (data) => {
  * and role name. It then verifies the user's permissions and retrieves the list of health centers associated with the client.
  * The function returns a Promise that resolves to an object containing the list of health centers.
  *
+ * @function listOfHealthCenterApi
  * @param {Object} data - The data object containing the user ID, client ID, and role name.
  * @param {string} data.body.user_id - The ID of the user making the request.
  * @param {string} data.body.client_id - The ID of the client.
@@ -219,6 +223,7 @@ const listOfHealthCenterApi = async (data) => {
  * If successful, it returns a Promise that resolves to an object containing the list of robots.
  * If any error occurs during the process, it throws an Error with details of the specific error encountered.
  *
+ * @function listOfHospitalRobotsApi
  * @param {Object} data - The data object containing the user ID, branch ID, and role name.
  * @param {string} data.body.user_id - The ID of the user making the request.
  * @param {string} data.body.branch_id - The ID of the branch associated with the robots.
@@ -268,7 +273,7 @@ const listOfHospitalRobotsApi = async (data) => {
  * scan type, and differential diagnosis. It returns a Promise that resolves to an object indicating the success of the appointment 
  * creation. If any error occurs during the creation process, it throws an Error.
  * 
- *
+ * @function createAppointmentApi
  * @param {Object} data - The data object containing the appointment details.
  * @param {string} data.body.user_id - The ID of the user creating the appointment.
  * @param {string} data.body.role_name - The role of the user creating the appointment.
@@ -406,10 +411,7 @@ const createNewAppointmentApi = async (data) => {
                     appointment_type: "normal_appointment",
                     created_by: data.body.user_id,
                     is_report_sent: false,
-                    call_url: {
-                        meetingUrl: "video call",
-                        moderatorUrl: "video call",
-                    },   // await videoCallApi(conferenceInfo)
+                    call_url: await videoCallApi(conferenceInfo),
                     action_required: false,
                     is_cancelled: false
                 }
@@ -449,6 +451,7 @@ const createNewAppointmentApi = async (data) => {
  * If the user details are not found or the user ID is not found, it throws an object with status and message properties. 
  * If an internal server error occurs, it throws a string with the error message.
  *
+ * @function cancelAppointmentApi
  * @param {Object} data - The data object containing the user ID, role name, and appointment ID.
  * @param {string} data.body.user_id - The ID of the user.
  * @param {string} data.body.role_name - The role name of the user.
@@ -494,7 +497,8 @@ const cancelAppointmentApi = async (data) => {
  * This function takes in data containing the user's ID, role name, client ID, and the date for which appointments are requested. 
  * It then fetches appointments from the database based on the specified date and client ID. 
  * The returned array contains appointments filtered according to the user's role and the provided data.
- *
+ * 
+ * @function listOfHospitalAppointmentsApi
  * @param {string} data.body.user_id - The ID of the user.
  * @param {string} data.body.role_name - The role name of the user.
  * @param {string} data.body.client_id - The ID of the client.
@@ -569,6 +573,7 @@ const listOfHospitalAppointmentsApi = async (data) => {
  * If the appointment ID is found, it resolves to an object containing the appointment details.
  * If the appointment ID is not found, it throws an error.
  * 
+ * @function appointmentDetailsApi
  * @param {Object} data - An object containing the appointment ID.
  * @param {string} data.body.appointment_id - The ID of the appointment to retrieve.
  * 
@@ -656,6 +661,7 @@ const appointmentDetailsApi = async (data) => {
  * appointment ID, and fields to update. It asynchronously updates the appointment with the specified changes and returns a 
  * Promise that resolves to an object containing the status and message of the edited appointment.
  *
+ * @function editAppointmentApi
  * @param {Object} data - The data object containing the user ID, appointment ID, and fields to update.
  * @param {string} data.body.user_id - The ID of the user.
  * @param {string} data.body.appointment_id - The ID of the appointment.
@@ -722,10 +728,7 @@ const editAppointmentApi = async (data) => {
                     appointment_time: convertTimeTo24HourFormat(data.body.time)
                 }
 
-                editAppointmentParams.call_url = {
-                    meetingUrl: "video call",
-                    moderatorUrl: "video call",
-                }
+                editAppointmentParams.call_url = await videoCallApi(conferenceInfo)
 
                 const appointmentDetails = await collections.AppointmentModel
                     .findOneAndUpdate({ appointment_id: data.body.appointment_id },
@@ -754,6 +757,29 @@ const editAppointmentApi = async (data) => {
     }
 }
 
+/**
+ * Admin reschedules an appointment based on the provided data.
+ * 
+ * This function retrieves user details and verifies the user's role before attempting to reschedule an appointment.
+ * It ensures that the provided date and time are valid and in the future, and then updates the appointment details
+ * in the database.
+ * 
+ * @function rescheduleAppointmentApi
+ * @param {Object} data - The data required to reschedule the appointment.
+ * @param {Object} data.body - The body of the data containing the appointment details.
+ * 
+ * @param {string} data.body.doctor_name - The name of the doctor for the appointment.
+ * @param {string} data.body.user_id - The ID of the user requesting the reschedule.
+ * @param {string} data.body.role_name - The role of the user (e.g., systemAdmin, admin).
+ * @param {string} data.body.appointment_id - The ID of the appointment to be rescheduled.
+ * 
+ * @param {string} data.body.date - The new date for the appointment.
+ * @param {string} data.body.time - The new time for the appointment.
+ * 
+ * @returns {Promise<Object>} - A promise that resolves to a success or error message.
+ * 
+ * @throws {string} - Throws an error message if the rescheduling fails at any point.
+ */
 const rescheduleAppointmentApi = async (data) => {
 
     try {
@@ -772,10 +798,7 @@ const rescheduleAppointmentApi = async (data) => {
                     appointment_time: convertTimeTo24HourFormat(data.body.time)
                 }
 
-                const callUrl = {
-                    meetingUrl: "video call",
-                    moderatorUrl: "video call",
-                }
+                const callUrl = await videoCallApi(conferenceInfo)
 
                 const appointmentDetails = await collections.AppointmentModel
                     .findOneAndUpdate({ appointment_id: data.body.appointment_id },
@@ -804,7 +827,10 @@ const rescheduleAppointmentApi = async (data) => {
 
 
 export default {
-    searchPatientInformationApi, listOfScanTypesApi, listOfHospitalDoctorsApi,
-    listOfHealthCenterApi, listOfHospitalRobotsApi, createNewAppointmentApi,
-    appointmentDetailsApi, cancelAppointmentApi, editAppointmentApi, listOfHospitalAppointmentsApi, rescheduleAppointmentApi
+    searchPatientInformationApi, listOfScanTypesApi,
+    listOfHospitalDoctorsApi, listOfHealthCenterApi,
+    listOfHospitalRobotsApi, createNewAppointmentApi,
+    appointmentDetailsApi, cancelAppointmentApi,
+    editAppointmentApi, listOfHospitalAppointmentsApi,
+    rescheduleAppointmentApi
 }

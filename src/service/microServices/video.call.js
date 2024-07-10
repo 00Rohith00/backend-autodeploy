@@ -9,8 +9,8 @@ import axios from "axios"
  * containing the meeting URL and moderator URL. If there's an error during the call, the promise resolves to "null".
  *
  * @param {Object} conferenceInfo - An object containing conference information.
- * @param {string} conferenceInfo.appointmentDate - The date of the appointment for the conference.
- * @param {string} conferenceInfo.appointmentTime - The time of the appointment for the conference.
+ * @param {string} appointmentDate - The date of the appointment for the conference.
+ * @param {string} appointmentTime - The time of the appointment for the conference.
  * @param {string} conferenceInfo.owner - The owner or initiator of the conference. One side of the call doctor and 
  * other hand the patient. 
  * @returns {Promise<Object|string>} A Promise that resolves to an object containing the meeting URL and moderator URL 

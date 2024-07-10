@@ -1,9 +1,8 @@
-import { router } from "../../../server.js"
-
+import express from "express"
 import middleware from "./import.js"
 import controller from "../../controller/doctorControllers/doctor.controller.js"
 
-const doctorRouters = router
+const doctorRouters = express.Router() 
 
 //post routers
 doctorRouters.post("/doctor-details", middleware.doctorDetailsApi, controller.doctorDetailsApi)

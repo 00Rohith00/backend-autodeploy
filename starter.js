@@ -38,7 +38,7 @@ envVars.forEach((envVar) => {
         console.log(`❌ Environment variable ${envVar} is undefined or empty`)
         allEnvVarsDefined = false
     }
-});
+})
 
 if (allEnvVarsDefined) {
     console.log('☑️  All environment variables are defined.')

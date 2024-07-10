@@ -12,6 +12,7 @@ const listOfPatientsApi = [...patientCommonMiddlewares]
 const previousHistoryApi = [...patientCommonMiddlewares]
 
 export default {
-  createNewPatientsApi, listOfPatientsApi,  previousHistoryApi,
-  editPatientDetailsApi, editPatientDetailsApi
+  createNewPatientsApi, listOfPatientsApi,
+  previousHistoryApi, editPatientDetailsApi,
+  editPatientDetailsApi
 }

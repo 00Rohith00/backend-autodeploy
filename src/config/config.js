@@ -3,7 +3,13 @@ import { loadData } from '../utils/load.assets.js'
 
 dotenv.config()
 
+/**
+ * Returns the current port.
+ *
+ * @return {number} The current port.
+ */
 export const port = loadData("port", process.env.PORT)
+
 
 /**
  * Returns the current environment based on the given value.
@@ -24,14 +30,12 @@ export let prod = (_now) => {
     }
 }
 
-/**
- * Mongoose configuration object.
- * @typedef {Object} MongooseConfig
- * @property {string} URL - The URL of the MongoDB instance.
- */
 
 /**
- * Returns the current Mongoose configuration.
+ * Returns the current Mongoose configuration object.
+ * 
+ * @type {Object} MongooseConfig
+ * @property {string} URL - The URL of the MongoDB instance.
  * @returns {MongooseConfig} The Mongoose configuration object.
  */
 export const mongooseConfig = {
@@ -39,28 +43,19 @@ export const mongooseConfig = {
 }
 
 
-
-/**
- * API version configuration object.
- * @typedef {Object} ApiVersionConfig
- * @property {string} version - The API version.
- */
-
 /**
  * Represents the API version configuration.
- * @type {ApiVersionConfig}
+ * @type {object} ApiVersionConfig
+ * @property {string} version - The API version.
  */
 export const apiVersion = loadData("api version", process.env.API_VERSION)
 
-/**
- * JWT Token Configuration Object.
- * @typedef {Object} JwtTokenConfig
- * @property {string} tokenKey - The JWT secret key.
- * @property {string} tokenExpireIn - The JWT token expiration time.
- */
 
 /**
  * Returns the JWT Token configuration.
+ * @type {Object} JwtTokenConfig
+ * @property {string} tokenKey - The JWT secret key.
+ * @property {string} tokenExpireIn - The JWT token expiration time.
  * @returns {JwtTokenConfig} The JWT Token configuration object.
  */
 export const jwtToken = {
@@ -69,17 +64,12 @@ export const jwtToken = {
 }
 
 /**
- * Defines role IDs for different user roles.
- * @typedef {Object} RoleIds
+ * Role IDs for different user roles.
+ * @type {object} RoleIds
  * @property {string} superAdmin - The ID of the super admin role.
  * @property {string} admin - The ID of the admin role.
  * @property {string} systemAdmin - The ID of the system admin role.
  * @property {string} doctor - The ID of the doctor role.
- */
-
-/**
- * Role IDs for different user roles.
- * @type {RoleIds}
  */
 export const roleId = {
     superAdmin: loadData("super admin role id", process.env.SUPER_ADMIN_ROLE_ID),
@@ -88,18 +78,14 @@ export const roleId = {
     doctor: loadData("doctor role id", process.env.DOCTOR_ROLE_ID)
 }
 
+
 /**
- * Defines role IDs for different user roles.
- * @typedef {Object} Role
+ * Role name for different user roles.
+ * @type {Object} Role
  * @property {string} superAdmin - The ID of the super admin role.
  * @property {string} admin - The ID of the admin role.
  * @property {string} systemAdmin - The ID of the system admin role.
  * @property {string} doctor - The ID of the doctor role.
- */
-
-/**
- * Role name for different user roles.
- * @type {Role}
  */
 export const role = {
     superAdmin: loadData("super admin", process.env.SUPER_ADMIN),
@@ -108,6 +94,15 @@ export const role = {
     doctor: loadData("doctor", process.env.DOCTOR)
 }
 
+
+/**
+ * Email service configuration.
+ * @type {Object} EmailServiceConfig
+ * @property {string} apiKey - The API key for the email service.
+ * @property {string} audienceId - The audience ID for the email service.
+ * @property {string} server - The server for the email service.
+ * @returns {EmailServiceConfig} The email service configuration object.
+ */
 export const emailService = {
     apiKey: loadData("api key", process.env.EMAIL_SERVICE_API_KEY),
     audienceId: loadData("audience id", process.env.EMAIL_SERVICE_AUDIENCE_ID),

@@ -6,13 +6,15 @@ import validation from "../../middleware/validationSchema/validator.schema.js"
 const reportCommonMiddlewares = [apiLogger, tokenVerification]
 
 const patientReportApi = [...reportCommonMiddlewares, validation.patientReportApi]
-const listOfReportsApi = [...reportCommonMiddlewares]
-
 const addReportTemplateApi = [...reportCommonMiddlewares, validation.addReportTemplateApi]
 const deleteReportTemplateApi = [...reportCommonMiddlewares, validation.deleteReportTemplateApi]
+
+const listOfReportsApi = [...reportCommonMiddlewares]
 const listOfReportTemplatesApi = [...reportCommonMiddlewares]
 
 export default {
-  patientReportApi, listOfReportsApi, addReportTemplateApi, listOfReportTemplatesApi, deleteReportTemplateApi
+  patientReportApi, listOfReportsApi,
+  addReportTemplateApi, listOfReportTemplatesApi,
+  deleteReportTemplateApi
 }
 

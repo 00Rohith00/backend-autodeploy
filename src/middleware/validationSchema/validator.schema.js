@@ -2,9 +2,11 @@ import joi from 'joi'
 import { failResponse } from '../../utils/response.handle.js'
 import { validateDateTime, isValidDate } from '../../utils/date.time.js'
 
+
 /**
- * Validates the request body for creating a new client API.
+ * This is middleware function which validates the request body for creating a new client API.
  *
+ * @function createNewClientApi
  * @param {Object} request - The request object containing the body.
  * @param {Object} response - The response object.
  * @param {Function} next - The next middleware function.
@@ -14,11 +16,11 @@ const createNewClientApi = (request, response, next) => {
 
     const hospitalClientSchemaParams = {
         // This pattern refer the strings which containing one or more words with single white spaces between them
-        hospital_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
+        hospital_name: joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(30).required(),
         logo_url: joi.string().uri().required(),
         domain_url: joi.string().uri().required(),
-        scan_type: joi.array().items(joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30)).optional(),
-        department: joi.array().items(joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30)).optional()
+        scan_type: joi.array().items(joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(30)).optional(),
+        department: joi.array().items(joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(30)).optional()
     }
 
     const clientDetails = {
@@ -45,8 +47,9 @@ const createNewClientApi = (request, response, next) => {
 
 
 /**
- * Middleware function to create a new user with validation.
+ * This is middleware function to create a new user with validation.
  *
+ * @function createNewUserApi
  * @param {Object} request - The request object.
  * @param {Object} response - The response object.
  * @param {Function} next - The next middleware function.
@@ -56,10 +59,10 @@ const createNewUserApi = (request, response, next) => {
 
     let validationConditions = {
         client_id: joi.number().required(),
-        user_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
+        user_name: joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(30).required(),
         user_email_id: joi.string().email().required(),
         user_contact_number: joi.string().regex(/^\d{10}$/).required(),
-        user_location: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)?$/).min(3).max(20).required(),
+        user_location: joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(20).required(),
         user_pin_code: joi.number().required(),
         user_age: joi.number().min(1).max(110).required(),
         image_url: joi.string().uri().required(),
@@ -135,8 +138,9 @@ const createNewUserApi = (request, response, next) => {
 
 
 /**
- * Validates the request body for the scan type API.
+ * This middleware function validates the request body for the scan type API.
  *
+ * @function addScanType
  * @param {Object} request - The request object containing the body.
  * @param {Object} response - The response object.
  * @param {Function} next - The next middleware function.
@@ -144,7 +148,7 @@ const createNewUserApi = (request, response, next) => {
  */
 const addScanType = (request, response, next) => {
 
-    const { error } = joi.object({ scan_type: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required() }).validate({ scan_type: request.body.scan_type })
+    const { error } = joi.object({ scan_type: joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(30).required() }).validate({ scan_type: request.body.scan_type })
 
     if (error) {
         failResponse(response, {
@@ -156,6 +160,16 @@ const addScanType = (request, response, next) => {
     else { next() }
 }
 
+
+/**
+ * This middleware function validates the request body for the scan type API.
+ *
+ * @function deleteScanType
+ * @param {Object} request - The request object containing the body
+ * @param {Object} response - The response object
+ * @param {Function} next - The next middleware function
+ * @return {void} Calls the next middleware function if the request body is valid, otherwise sends a fail response
+ */
 const deleteScanType = (request, response, next) => {
 
     const { error } = joi.object({ scan_type_id: joi.number().required() }).validate({ scan_type_id: request.body.scan_type_id })
@@ -170,9 +184,19 @@ const deleteScanType = (request, response, next) => {
     else { next() }
 }
 
+
+/**
+ * This middleware function validates the request body for adding a department.
+ *
+ * @function addDepartment
+ * @param {Object} request - The request object containing the body.
+ * @param {Object} response - The response object.
+ * @param {Function} next - The next middleware function.
+ * @return {void} Calls the next middleware function if the request body is valid, otherwise sends a fail response.
+ */
 const addDepartment = (request, response, next) => {
 
-    const { error } = joi.object({ department: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required() }).validate({ department: request.body.department })
+    const { error } = joi.object({ department: joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(30).required() }).validate({ department: request.body.department })
     if (error) {
         failResponse(response, {
             status: false,
@@ -183,6 +207,16 @@ const addDepartment = (request, response, next) => {
     else { next() }
 }
 
+
+/**
+ * This is middleware function to validate the request body for deleting a department.
+ *
+ * @function deleteDepartment
+ * @param {Object} request - The request object containing the body.
+ * @param {Object} response - The response object.
+ * @param {Function} next - The next middleware function.
+ * @return {void} Calls the next middleware function if the request body is valid, otherwise sends a fail response.
+ */
 const deleteDepartment = (request, response, next) => {
 
     const { error } = joi.object({ department_id: joi.number().required() }).validate({ department_id: request.body.department_id })
@@ -196,9 +230,11 @@ const deleteDepartment = (request, response, next) => {
     else { next() }
 }
 
+
 /**
- * Middleware function to create a new health center with validation.
+ * This is middleware function to create a new health center with validation.
  *
+ * @function createNewHealthCenter
  * @param {Object} request - The request object.
  * @param {Object} response - The response object.
  * @param {Function} next - The next middleware function.
@@ -207,9 +243,9 @@ const deleteDepartment = (request, response, next) => {
 const createNewHealthCenterApi = (request, response, next) => {
     const newHealthCenterSchema = joi.object(
         {
-            branch_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
+            branch_name: joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(30).required(),
             branch_contact_number: joi.string().regex(/^\d{10}$/).required(),
-            branch_location: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(20).required(),
+            branch_location: joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(30).required(),
             branch_pin_code: joi.number().required(),
         })
 
@@ -233,8 +269,9 @@ const createNewHealthCenterApi = (request, response, next) => {
 
 
 /**
- * Validates the request body for creating a new robot API.
+ * This is middleware function which validates the request body for creating a new robot API.
  *
+ * @function createNewRobot
  * @param {Object} request - The request object containing the body.
  * @param {Object} response - The response object.
  * @param {Function} next - The next middleware function.
@@ -263,9 +300,11 @@ const createNewRobotApi = (request, response, next) => {
     else { next() }
 }
 
+
 /**
- * Middleware function to validate if an existing user exists in the API.
+ * This is middleware function to validate if an existing user exists in the API.
  *
+ * @function isExistingUser
  * @param {Object} request - The request object.
  * @param {Object} response - The response object.
  * @param {Function} next - The next middleware function.
@@ -285,9 +324,11 @@ const isExistingUserApi = (request, response, next) => {
     else { next() }
 }
 
+
 /**
- * Middleware function to validate the request body for setting a password API.
- *
+ * This is middleware function to validate the request body for setting a password API.
+ * 
+ * @function setPassword
  * @param {Object} request - The request object containing the body.
  * @param {Object} response - The response object.
  * @param {Function} next - The next middleware function.
@@ -298,7 +339,7 @@ const setPasswordApi = (request, response, next) => {
     const { error } = joi.object({
 
         user_email_id: joi.string().email().required(),
-        password: joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).{8,}$/).required()
+        password: joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).{8,16}$/).required()
 
     }).validate({ user_email_id: request.body.user_email_id, password: request.body.password })
 
@@ -312,9 +353,11 @@ const setPasswordApi = (request, response, next) => {
     else { next() }
 }
 
+
 /**
- * Middleware function to validate the request body for the login API.
+ * This is middleware function to validate the request body for the login API.
  *
+ * @function loginApi
  * @param {Object} request - The request object containing the body.
  * @param {Object} response - The response object.
  * @param {Function} next - The next middleware function.
@@ -324,7 +367,7 @@ const loginApi = (request, response, next) => {
     const loginSchema = joi.object(
         {
             user_email_id: joi.string().email().required(),
-            password: joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).{8,}$/).required(),
+            password: joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).{8,16}$/).required(),
             role_id: joi.number().required()
         })
 
@@ -344,6 +387,16 @@ const loginApi = (request, response, next) => {
     else { next() }
 }
 
+
+/**
+ * This is middleware function to validate the request body for the verifyOptApi API.
+ *
+ * @function verifyOptApi
+ * @param {Object} request - The request object containing the body.
+ * @param {Object} response - The response object.
+ * @param {Function} next - The next middleware function.
+ * @return {void} Calls the next middleware function if the request body is valid, otherwise sends a fail response.
+ */
 const verifyOptApi = (request, response, next) => {
 
     const verifyOtpSchema = joi.object(
@@ -364,9 +417,11 @@ const verifyOptApi = (request, response, next) => {
     else { next() }
 }
 
+
 /**
- * Middleware function to validate the request body for the create new patients API.
+ * This is middleware function to validate the request body for the create new patients API.
  *
+ * @function createNewPatientsApi
  * @param {Object} request - The request object containing the body.
  * @param {Object} response - The response object.
  * @param {Function} next - The next middleware function.
@@ -377,12 +432,12 @@ const createNewPatientsApi = (request, response, next) => {
     const patientValidation = {
         op_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional(),
         patient_mobile_number: joi.string().regex(/^\d{10}$/).required(),
-        patient_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
+        patient_name: joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(30).required(),
         patient_email_id: joi.string().email().optional(),
         patient_age: joi.number().required(),
         patient_pin_code: joi.number().required(),
-        patient_address: joi.string().regex(/^(?!.* {2})(?!.*\n{2})([A-Za-z0-9.'\-#@%&/, \n]*)$/).min(8).max(36).optional(),
-        electronic_id: joi.string().trim().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional()
+        patient_address: joi.string().min(8).max(120).optional(),
+        electronic_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(20).optional()
     }
 
     if (!(request.body.patient_gender == 'male' || request.body.patient_gender == 'female'))
@@ -418,8 +473,17 @@ const createNewPatientsApi = (request, response, next) => {
 }
 
 
-// doctor module:
+// * Doctor module
 
+/**
+ * This is middleware function to validates the request body for the doctor details API.
+ * 
+ * @function doctorDetailsApi
+ * @param {Object} request - The request object containing the body with the doctor ID.
+ * @param {Object} response - The response object to send the validation result.
+ * @param {Function} next - The next middleware function to call if the validation passes.
+ * @return {void} This function does not return anything.
+ */
 const doctorDetailsApi = (request, response, next) => {
 
     const doctorSchema = joi.object({ doctor_id: joi.number().required() })
@@ -433,17 +497,27 @@ const doctorDetailsApi = (request, response, next) => {
         })
     }
     else { next() }
-
 }
+
+
+/**
+ * This is middleware function to validates the request body for the doctor details API.
+ *
+ * @function editDoctorDetailsApi
+ * @param {Object} request - The request object containing the body with the doctor ID.
+ * @param {Object} response - The response object to send the validation result.
+ * @param {Function} next - The next middleware function to call if the validation passes.
+ * @return {void} This function does not return anything.
+ */
 const editDoctorDetailsApi = (request, response, next) => {
 
     let validationConditions = {
 
         doctor_id: joi.number().required(),
-        user_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
+        user_name: joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(30).required(),
         user_email_id: joi.string().email().required(),
         user_contact_number: joi.string().regex(/^\d{10}$/).required(),
-        user_location: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)?$/).min(3).max(20).required(),
+        user_location: joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(30).required(),
         user_pin_code: joi.number().required(),
         user_age: joi.number().min(1).max(110).required(),
         image_url: joi.string().uri().required(),
@@ -487,12 +561,20 @@ const editDoctorDetailsApi = (request, response, next) => {
         })
     }
     else { next() }
-
 }
 
 
-// appointment module:
+// * Appointment module
 
+/**
+ * This is middleware function that validates the request body for the search patient information API.
+ *
+ * @function searchPatientInformationApi
+ * @param {Object} request - The request object containing the body.
+ * @param {Object} response - The response object.
+ * @param {Function} next - The next middleware function.
+ * @return {void} Calls the next middleware function if the request body is valid, otherwise sends a fail response.
+ */
 const searchPatientInformationApi = (request, response, next) => {
 
     const { error } = joi.object({ phone_number: joi.string().regex(/^\d{10}$/).required() }).validate({ phone_number: request.body.patient_mobile_number })
@@ -508,6 +590,15 @@ const searchPatientInformationApi = (request, response, next) => {
 }
 
 
+/**
+ * This is middleware function that validates the request body for the list of hospital robots API.
+ *
+ * @function listOfHospitalRobotsApi
+ * @param {Object} request - The request object containing the body.
+ * @param {Object} response - The response object.
+ * @param {Function} next - The next middleware function.
+ * @return {void} Calls the next middleware function if the request body is valid, otherwise sends a fail response.
+ */
 const listOfHospitalRobotsApi = (request, response, next) => {
 
     const listOfRobotSchema = joi.object({ branch_id: joi.number().required() })
@@ -537,16 +628,24 @@ const customJoi = joi.extend((joi) => ({
             return { value, errors: helpers.error('date.future') }
         }
     }
-
 }))
 
+
+/**
+ * This is middleware function that validates the input data for creating a new appointment.
+ *
+ * @function createNewAppointmentApi
+ * @param {Object} request - The request object.
+ * @param {Object} response - The response object.
+ * @param {Function} next - The next middleware function.
+ * @return {void}
+ */
 const createNewAppointmentApi = (request, response, next) => {
 
     const appointmentSchema =
     {
         patient_mobile_number: joi.string().regex(/^\d{10}$/).required(),
-        patient_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(),
-        patient_gender: joi.string().regex(/^[a-zA-Z]+$/).required(),
+        patient_name: joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(30).required(),
         patient_age: joi.number().min(1).max(110).required(),
         patient_pin_code: joi.number().required(),
         branch_id: joi.number().required(),
@@ -555,13 +654,17 @@ const createNewAppointmentApi = (request, response, next) => {
         date: customJoi.futureDate().required().label('Appointment-Date'),
         time: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).required().label('Appointment-Time'),
         scan_type_id: joi.number().required(),
-        differential_diagnosis: joi.string().regex(/^(?!.* {2})(?!.*\n{2})([A-Za-z0-9.'\-#@%&/, \n]*)$/).min(3).max(30).required(),
+        differential_diagnosis: joi.string().min(5).required(),
         patient_id: joi.number().optional(),
         op_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional(),
         billing_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(30).optional(),
         electronic_id: joi.string().regex(/^[a-zA-Z0-9]+$/).min(4).max(16).optional(),
-        patient_address: joi.string().regex(/^(?!.* {2})(?!.*\n{2})([A-Za-z0-9.'\-#@%&/, \n]*)$/).min(8).max(36).optional(),
+        patient_address: joi.string().min(8).max(60).optional(),
         patient_email_id: joi.string().email().optional()
+    }
+
+    if (!(request.body.user_gender == 'male' || request.body.user_gender == 'female')) {
+        failResponse(response, { status: false, message: "invalid gender name" })
     }
 
     const appointmentDetails = {
@@ -614,6 +717,16 @@ const createNewAppointmentApi = (request, response, next) => {
     else { next() }
 }
 
+
+/**
+ * This is middleware validation for appointment details and handles errors accordingly.
+ *
+ * @function appointmentDetailsApi
+ * @param {object} request - the request object
+ * @param {object} response - the response object
+ * @param {function} next - the next function to execute
+ * @return {void} no return value
+ */
 const appointmentDetailsApi = (request, response, next) => {
 
     const appointmentSchema = joi.object({ appointment_id: joi.number().required() })
@@ -628,9 +741,18 @@ const appointmentDetailsApi = (request, response, next) => {
         })
     }
     else { next() }
-
 }
 
+
+/**
+ * This is middleware function for editing appointment details with input validation.
+ *
+ * @function editAppointmentApi
+ * @param {Object} request - The request object.
+ * @param {Object} response - The response object.
+ * @param {Function} next - The next middleware function.
+ * @return {void}
+ */
 const editAppointmentApi = (request, response, next) => {
 
     const appointmentSchema = {
@@ -642,7 +764,7 @@ const editAppointmentApi = (request, response, next) => {
         date: customJoi.futureDate().required().label('Appointment-Date'),
         time: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).required().label('Appointment-Time'),
         scan_type_id: joi.number().required(),
-        differential_diagnosis: joi.string().regex(/^(?!.* {2})(?!.*\n{2})([A-Za-z0-9.'\-#@%&/, \n]*)$/).min(3).max(30).required()
+        differential_diagnosis: joi.string().min(5).required(),
     }
 
     const appointmentDetails = {
@@ -673,6 +795,15 @@ const editAppointmentApi = (request, response, next) => {
 }
 
 
+/**
+ * This is middleware function that validates the request body for the list of hospital appointments API.
+ *
+ * @function listOfHospitalAppointmentsApi
+ * @param {Object} request - The request object containing the body with the date.
+ * @param {Object} response - The response object.
+ * @param {Function} next - The next middleware function.
+ * @return {void}
+ */
 const listOfHospitalAppointmentsApi = (request, response, next) => {
 
     const appointmentSchema = joi.object({ date: customJoi.futureDate().required().label('Appointment-Date') })
@@ -690,6 +821,16 @@ const listOfHospitalAppointmentsApi = (request, response, next) => {
 
 }
 
+
+/**
+ * This is middleware function for validating the request body for the rescheduleAppointmentApi API.
+ *
+ * @function rescheduleAppointmentApi
+ * @param {Object} request - The request object containing the body with the appointment details.
+ * @param {Object} response - The response object.
+ * @param {Function} next - The next middleware function.
+ * @return {void}
+ */
 const rescheduleAppointmentApi = (request, response, next) => {
 
     const appointmentSchema = joi.object({
@@ -697,7 +838,7 @@ const rescheduleAppointmentApi = (request, response, next) => {
         date: customJoi.futureDate().required().label('Appointment-Date'),
         time: joi.string().pattern(/^(0[1-9]|1[0-2]):[0-5][0-9] [AP]M$/).required().label('Appointment-Time'),
         appointment_id: joi.number().required(),
-        doctor_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required()
+        doctor_name: joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(30).required()
     })
 
     const { error } = appointmentSchema.validate({
@@ -718,6 +859,15 @@ const rescheduleAppointmentApi = (request, response, next) => {
 }
 
 
+/**
+ * This is middleware function validates the request body for patient report API.
+ *
+ * @function patientReportApi
+ * @param {Object} request - The request object.
+ * @param {Object} response - The response object.
+ * @param {Function} next - The next middleware function.
+ * @return {void}
+ */
 const patientReportApi = (request, response, next) => {
 
     const { error } = joi.object({ appointment_id: joi.number().required(), report_details: joi.string().required() })
@@ -733,9 +883,19 @@ const patientReportApi = (request, response, next) => {
     else { next() }
 }
 
+
+/**
+ * This is middleware function to validate the request body for adding a report template API.
+ * 
+ * @function addReportTemplateApi
+ * @param {Object} request - The request object containing the body.
+ * @param {Object} response - The response object.
+ * @param {Function} next - The next middleware function.
+ * @return {void} Calls the next middleware function if the request body is valid, otherwise sends a fail response.
+ */
 const addReportTemplateApi = (request, response, next) => {
 
-    const { error } = joi.object({ template_name: joi.string().regex(/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/).min(3).max(30).required(), template: joi.string().required() })
+    const { error } = joi.object({ template_name: joi.string().regex(/^[A-Za-z]+\s?([A-Za-z]+\s?)*$/).min(3).max(30).required(), template: joi.string().required() })
         .validate({ template_name: request.body.template_name, template: request.body.template })
 
     if (error) {
@@ -748,6 +908,15 @@ const addReportTemplateApi = (request, response, next) => {
     else { next() }
 }
 
+/**
+ * This is middleware function to validate the request body for deleting a report template API.
+ * 
+ * @function deleteReportTemplateApi
+ * @param {Object} request - The request object containing the body.
+ * @param {Object} response - The response object.
+ * @param {Function} next - The next middleware function.
+ * @return {void} Calls the next middleware function if the request body is valid, otherwise sends a fail response.
+ */
 const deleteReportTemplateApi = (request, response, next) => {
 
     const { error } = joi.object({ template_id: joi.number().required() }).validate({ template_id: request.body.template_id })
@@ -764,11 +933,19 @@ const deleteReportTemplateApi = (request, response, next) => {
 
 const robotMaintenanceStatusApi = (request, response, next) => { next() }
 
+
+
 export default {
-    createNewClientApi, createNewUserApi, deleteScanType, addScanType, addDepartment,
-    deleteDepartment, createNewHealthCenterApi, createNewRobotApi, isExistingUserApi,
-    setPasswordApi, loginApi, verifyOptApi, createNewPatientsApi, robotMaintenanceStatusApi,
-    doctorDetailsApi, editDoctorDetailsApi, searchPatientInformationApi,
-    listOfHospitalRobotsApi, createNewAppointmentApi, appointmentDetailsApi, editAppointmentApi,
-    addReportTemplateApi, deleteReportTemplateApi, listOfHospitalAppointmentsApi, rescheduleAppointmentApi, patientReportApi,
+    isExistingUserApi, setPasswordApi, loginApi,
+    verifyOptApi, addReportTemplateApi, addScanType,
+    addDepartment, createNewPatientsApi,
+    createNewAppointmentApi, createNewClientApi,
+    createNewUserApi, createNewHealthCenterApi,
+    createNewRobotApi, robotMaintenanceStatusApi,
+    editAppointmentApi, doctorDetailsApi,
+    editDoctorDetailsApi, patientReportApi,
+    searchPatientInformationApi, appointmentDetailsApi,
+    rescheduleAppointmentApi, listOfHospitalRobotsApi,
+    listOfHospitalAppointmentsApi, deleteScanType,
+    deleteReportTemplateApi, deleteDepartment
 }

@@ -6,6 +6,7 @@ import { jwtToken } from "../../config/config.js"
 /**
  * Verifies the authentication token in the request headers and sets the user token in the request body.
  *
+ * @function tokenVerification
  * @param {Object} request - The request object containing headers and body.
  * @param {Object} response - The response object.
  * @param {Function} next - The next middleware function.
@@ -28,7 +29,7 @@ export const tokenVerification = (request, response, next) => {
         })
     }
 
-    jwt.verify(token, jwtToken.tokenKey , (error, user) => {
+    jwt.verify(token, jwtToken.tokenKey, (error, user) => {
 
         if (error || user.token.user_id != request.body.user_id) {
             return forbiddenResponse(response, invalidAuthenticationToken)

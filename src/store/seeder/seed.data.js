@@ -1,231 +1,391 @@
-/**
- * This particular provided data represents hospital specific detail such as hospital_name,
- * logo_url, domain_url, scan_type
- * 
- * @typedef {Object} ClientDetails
- * @property {string} hospital_name - The name of the hospital.
- * @property {string} logo_url - The URL of the hospital's logo.
- * @property {string} domain_url - The domain URL of the hospital.
- * @property {Array.<string>} scan_type - An array of scan types offered by the hospital.
- */
-/**
- * Client details object.
- * @type {ClientDetails}
- */
-const clientDetails = {
-  hospital_name: "St. John's Medical Center",
-  logo_url: "https://example.com/stjohns_logo.png",
-  domain_url: "www.psg.com",
-  scan_type: ["Abdomen", "Ultrasound", "CT"],
-  department: ["Radiology"]
+const client = {
+  scan_type: [
+    { id: Date.now() + 1, scan_type: "X ray", is_archive: false },
+    { id: Date.now() + 2, scan_type: "Ultrasound", is_archive: false },
+    { id: Date.now() + 3, scan_type: "CT scan", is_archive: false }],
+  department: [
+    { id: Date.now() + 1, department: "Cardiology", is_archive: false },
+    { id: Date.now() + 2, department: "Radiology", is_archive: false },
+    { id: Date.now() + 3, department: "Neurology", is_archive: false }],
+  templates: [
+    { id: Date.now() + 1, template_name: "demo template one", template: "This is first demo template", is_archive: false },
+    { id: Date.now() + 2, template_name: "demo template two", template: "This is second demo template", is_archive: false },
+    { id: Date.now() + 3, template_name: "demo template three", template: "This is third demo template", is_archive: false }]
 }
 
-/**
- * This particular provided data represents the Super Admin, who owns the hospital in this case.
- * 
- * @typedef {Object} SuperAdminDetails
- * @property {string} user_name - The name of the super admin.
- * @property {string} user_email_id - The email ID of the super admin.
- * @property {string} user_contact_number - The contact number of the super admin.
- * @property {string} user_location - The location of the super admin.
- * @property {string} user_pin_code - The pin code of the super admin.
- * @property {null|Object} doctor - The doctor details associated with the super admin (nullable).
- */
-/**
- * Super admin details object.
- * @type {SuperAdminDetails}
- */
-const superAdminDetails = {
-  user_name: 'John',
-  user_email_id: 'john@gmail.com',
-  user_contact_number: '9129408483',
-  user_location: 'london',
-  user_pin_code: '349824',
-  doctor: null
+const psgClient = {
+
+  clientDetails: { hospital_name: "PSG", logo_url: "http://psg_logo_url", domain_url: "http://psg_domain_url", ...client },
+
+  superAdminDetails: [{
+    user_name: 'Rohith',
+    user_email_id: 'rohith@gmail.com',
+    user_contact_number: '9789508413',
+    user_location: 'coimbatore',
+    user_pin_code: '641001',
+    user_age: 25,
+    user_gender: "male",
+    doctor: null,
+    password: "Rohith@123",
+    image_url: "http://rohith.img.png"
+  },
+  {
+    user_name: 'Johnson',
+    user_email_id: 'johnson@gmail.com',
+    user_contact_number: '9129408483',
+    user_location: 'coimbatore',
+    user_pin_code: '641005',
+    user_age: 35,
+    user_gender: "male",
+    doctor: null,
+    password: "Johnson@123",
+    image_url: "http://johnson.img.png"
+  }],
+
+  adminDetails: [{
+    user_name: 'Rajesh',
+    user_email_id: 'rajesh@gmail.com',
+    user_contact_number: '9710923413',
+    user_location: 'coimbatore',
+    user_pin_code: '641008',
+    user_age: 28,
+    user_gender: "male",
+    doctor: null,
+    password: "Rajesh@123",
+    image_url: "http://rajesh.img.png"
+  },
+  {
+    user_name: 'Abishek',
+    user_email_id: 'abishek@gmail.com',
+    user_contact_number: '9129564748',
+    user_location: 'coimbatore',
+    user_pin_code: '641010',
+    user_age: 33,
+    user_gender: "male",
+    doctor: null,
+    password: "Abishek@123",
+    image_url: "http://abishek.img.png"
+  },
+  {
+    user_name: 'Sachin',
+    user_email_id: 'sachin@gmail.com',
+    user_contact_number: '6329164708',
+    user_location: 'coimbatore',
+    user_pin_code: '641009',
+    user_age: 29,
+    user_gender: "male",
+    doctor: null,
+    password: "Sachin@123",
+    image_url: "http://sachin.img.png"
+  },
+  {
+    user_name: 'Malavika',
+    user_email_id: 'malavika@gmail.com',
+    user_contact_number: '8312567908',
+    user_location: 'coimbatore',
+    user_pin_code: '641002',
+    user_age: 23,
+    user_gender: "female",
+    doctor: null,
+    password: "Malavika@123",
+    image_url: "http://malavika.img.png"
+  }],
+
+  systemAdminDetails: [{
+    user_name: 'Raj Kumar',
+    user_email_id: 'rajkumar@gmail.com',
+    user_contact_number: '8720913003',
+    user_location: 'coimbatore',
+    user_pin_code: '641022',
+    user_age: 27,
+    user_gender: "male",
+    doctor: null,
+    password: "Rajkumar@123",
+    image_url: "http://rajkumar.img.png"
+  },
+  {
+    user_name: 'Santhosh',
+    user_email_id: 'santhosh@gmail.com',
+    user_contact_number: '7812094562',
+    user_location: 'coimbatore',
+    user_pin_code: '641037',
+    user_age: 33,
+    user_gender: "male",
+    doctor: null,
+    password: "Santhosh@123",
+    image_url: "http://santhosh.img.png"
+  },
+  {
+    user_name: 'Kishore',
+    user_email_id: 'kishore@gmail.com',
+    user_contact_number: '6384150090',
+    user_location: 'coimbatore',
+    user_pin_code: '641019',
+    user_age: 34,
+    user_gender: "male",
+    doctor: null,
+    password: "Kishore@123",
+    image_url: "http://kishore.img.png"
+  },
+  {
+    user_name: 'Manisha',
+    user_email_id: 'manisha@gmail.com',
+    user_contact_number: '9267810092',
+    user_location: 'coimbatore',
+    user_pin_code: '641032',
+    user_age: 38,
+    user_gender: "female",
+    doctor: null,
+    password: "Manisha@123",
+    image_url: "http://manisha.img.png"
+  }],
+
+  doctorDetails: [{
+    user_name: 'Ravi Shankar',
+    user_email_id: 'ravishankar@gmail.com',
+    user_contact_number: '7339886758',
+    user_location: 'coimbatore',
+    user_pin_code: '641015',
+    user_age: 27,
+    user_gender: "male",
+    password: "Ravishankar@123",
+    image_url: "http://ravishankar.img.png",
+    doctor: { doctor_registration_id: "DOCTOR001", mbbs_completed_year: "2023", time_from: "09:12 AM", time_to: "03:12 PM", is_approved: true }
+  },
+  {
+    user_name: 'Pooja',
+    user_email_id: 'pooja@gmail.com',
+    user_contact_number: '6328987868',
+    user_location: 'coimbatore',
+    user_pin_code: '641016',
+    user_age: 24,
+    user_gender: "female",
+    password: "Pooja@123",
+    image_url: "http://pooja.img.png",
+    doctor: { doctor_registration_id: "DOCTOR002", mbbs_completed_year: "2023", time_from: "12:15 AM", time_to: "09:15 PM", is_approved: true }
+  },
+  {
+    user_name: 'Priya',
+    user_email_id: 'priya@gmail.com',
+    user_contact_number: '6345965825',
+    user_location: 'coimbatore',
+    user_pin_code: '641026',
+    user_age: 34,
+    user_gender: "female",
+    password: "Priya@123",
+    image_url: "http://priya.img.png",
+    doctor: { doctor_registration_id: "DOCTOR003", mbbs_completed_year: "2023", time_from: "05:00 AM", time_to: "02:00 PM", is_approved: true }
+  },
+  {
+    user_name: 'Gayathiri',
+    user_email_id: 'gayathiri@gmail.com',
+    user_contact_number: '7399077866',
+    user_location: 'coimbatore',
+    user_pin_code: '641032',
+    user_age: 30,
+    user_gender: "female",
+    password: "Gayathiri@123",
+    image_url: "http://gayathiri.img.png",
+    doctor: { doctor_registration_id: "DOCTOR004", mbbs_completed_year: "2023", time_from: "07:00 AM", time_to: "3:00 PM", is_approved: true }
+  }],
+
+  branchDetails: [{
+    branch_name: 'PSG Neelampur',
+    branch_contact_number: '9873029830',
+    branch_location: 'coimbatore',
+    branch_pin_code: '641001'
+  },
+  {
+    branch_name: 'PSG Hopes',
+    branch_contact_number: '7490251033',
+    branch_location: 'coimbatore',
+    branch_pin_code: '641002'
+  }],
+
+  robotDetails: [
+    { robot_registration_id: Date.now() + 1, under_maintenance: false },
+    { robot_registration_id: Date.now() + 2, under_maintenance: false },
+    { robot_registration_id: Date.now() + 3, under_maintenance: false },
+    { robot_registration_id: Date.now() + 4, under_maintenance: false }],
+
+  patientDetails: [{
+    op_id: "OP001",
+    patient_mobile_number: "8971205709",
+    patient_name: "Naveen",
+    patient_email_id: "naveen@gmail.com",
+    patient_gender: "male",
+    patient_age: 45,
+    patient_pin_code: "641007",
+    patient_address: "Coimbatore Tamil-nadu, India",
+    electronic_id: "W0wop907OO9LI",
+    action_required: false,
+  },
+  {
+    op_id: "OP002",
+    patient_mobile_number: "6392126109",
+    patient_name: "Praveen",
+    patient_email_id: "praveen@gmail.com",
+    patient_gender: "male",
+    patient_age: 41,
+    patient_pin_code: "641007",
+    patient_address: "Coimbatore Tamil-nadu, India",
+    electronic_id: "X0woP907OO9LI",
+    action_required: false,
+  },
+  {
+    op_id: "OP003",
+    patient_mobile_number: "7851372821",
+    patient_name: "sathish",
+    patient_email_id: "sathish@gmail.com",
+    patient_gender: "male",
+    patient_age: 29,
+    patient_pin_code: "641028",
+    patient_address: "Coimbatore Tamil-nadu, India",
+    electronic_id: "YX0p90621O9LI",
+    action_required: false,
+  },
+  {
+    op_id: "OP004",
+    patient_mobile_number: "8971205709",
+    patient_name: "Naveen",
+    patient_email_id: "naveen@gmail.com",
+    patient_gender: "male",
+    patient_age: 45,
+    patient_pin_code: "641007",
+    patient_address: "Coimbatore Tamil-nadu, India",
+    electronic_id: "S0VB907OO9LI",
+    action_required: false,
+  },
+  {
+    op_id: "OP005",
+    patient_mobile_number: "7332807010",
+    patient_name: "Vel Murugan",
+    patient_email_id: "vel@gmail.com",
+    patient_gender: "male",
+    patient_age: 30,
+    patient_pin_code: "641015",
+    patient_address: "Coimbatore Tamil-nadu, India",
+    electronic_id: "RX0VB907OO9LI",
+    action_required: false,
+  },
+  {
+    op_id: "OP006",
+    patient_mobile_number: "6219892011",
+    patient_name: "Bala",
+    patient_email_id: "bala@gmail.com",
+    patient_gender: "male",
+    patient_age: 50,
+    patient_pin_code: "641027",
+    patient_address: "Coimbatore Tamil-nadu, India",
+    electronic_id: "90Px1YO9LIk",
+    action_required: false,
+  },
+  {
+    op_id: "OP007",
+    patient_mobile_number: "9789536872",
+    patient_name: "Mari",
+    patient_email_id: "mari@gmail.com",
+    patient_gender: "male",
+    patient_age: 35,
+    patient_pin_code: "641011",
+    patient_address: "Coimbatore Tamil-nadu, India",
+    electronic_id: "F20ObK8WLI",
+    action_required: false,
+  },
+  {
+    op_id: "OP008",
+    patient_mobile_number: "6758493318",
+    patient_name: "Arpit",
+    patient_email_id: "arpit@gmail.com",
+    patient_gender: "male",
+    patient_age: 65,
+    patient_pin_code: "641023",
+    patient_address: "Coimbatore Tamil-nadu, India",
+    electronic_id: "RH1E2J3e5jxn",
+    action_required: false,
+  }],
+
+  appointmentDetails: [{
+    billing_id: "BILLING001",
+    date: "2024-08-20",
+    time: "06:00 AM",
+    differential_diagnosis: "Chest pain differential: heart attack, angina, GERD, pulmonary embolism.",
+    appointment_status: "up_coming",
+    appointment_type: "normal_appointment",
+    is_report_sent: false,
+    is_cancelled: false,
+  },
+  {
+    billing_id: "BILLING002",
+    date: "2024-08-20",
+    time: "08:30 AM",
+    differential_diagnosis: "Abdominal pain differential: appendicitis, gastroenteritis, IBS, peptic ulcer.",
+    appointment_status: "up_coming",
+    appointment_type: "normal_appointment",
+    is_report_sent: false,
+    is_cancelled: false,
+  },
+  {
+    billing_id: "BILLING003",
+    date: "2024-08-20",
+    time: "06:00 PM",
+    differential_diagnosis: "Upper abdominal pain differential: gastritis, pancreatitis, cholecystitis, liver disease.",
+    appointment_status: "up_coming",
+    appointment_type: "normal_appointment",
+    is_report_sent: false,
+    is_cancelled: false,
+  },
+  {
+    billing_id: "BILLING004",
+    date: "2024-08-20",
+    time: "09:00 PM",
+    differential_diagnosis: "Lower abdominal pain differential: diverticulitis, ovarian cyst, urinary tract infection, endometriosis.",
+    appointment_status: "up_coming",
+    appointment_type: "normal_appointment",
+    is_report_sent: false,
+    is_cancelled: false,
+  },
+  {
+    billing_id: "BILLING005",
+    date: "2024-08-21",
+    time: "06:30 AM",
+    differential_diagnosis: "Chest tightness differential: asthma, anxiety, myocardial infarction, costochondritis.",
+    appointment_status: "up_coming",
+    appointment_type: "normal_appointment",
+    is_report_sent: true,
+    is_cancelled: false,
+  },
+  {
+    billing_id: "BILLING006",
+    date: "2024-08-21",
+    time: "10:00 AM",
+    differential_diagnosis: "Epigastric pain differential: GERD, peptic ulcer, pancreatitis, gallstones.",
+    appointment_status: "up_coming",
+    appointment_type: "normal_appointment",
+    is_report_sent: true,
+    is_cancelled: false,
+  },
+  {
+    billing_id: "BILLING007",
+    date: "2024-08-21",
+    time: "02:00 PM",
+    differential_diagnosis: "Right upper quadrant pain differential: cholecystitis, hepatitis, liver abscess, biliary colic.",
+    appointment_status: "up_coming",
+    appointment_type: "normal_appointment",
+    is_report_sent: true,
+    is_cancelled: false,
+  },
+  {
+    billing_id: "BILLING008",
+    date: "2024-08-21",
+    time: "08:45 PM",
+    differential_diagnosis: "Chest discomfort differential: esophageal spasm, pericarditis, pleuritis, pulmonary hypertension.",
+    appointment_status: "up_coming",
+    appointment_type: "normal_appointment",
+    is_report_sent: true,
+    is_cancelled: false,
+  }],
+
 }
 
-/**
- * This particular provided data represents admin details and who owns an admin for a particular hospital.
- * 
- * @typedef {Object} AdminDetails
- * @property {string} user_name - The name of the admin.
- * @property {string} user_email_id - The email ID of the admin.
- * @property {string} user_contact_number - The contact number of the admin.
- * @property {string} user_location - The location of the admin.
- * @property {string} user_pin_code - The pin code of the admin.
- * @property {null|Object} doctor - The doctor details associated with the admin (nullable).
- */
-/**
- * Admin details object.
- * @type {AdminDetails}
- */
-const adminDetails = {
-  user_name: 'ram',
-  user_email_id: 'ram@gmail.com',
-  user_contact_number: '9129467801',
-  user_location: 'london',
-  user_pin_code: '349824',
-  doctor: null
-}
-
-/**
- * This particular provided data represents system admin details and who owns an system admin for a particular hospital branch.
- * 
- * @typedef {Object} SystemAdminDetails
- * @property {string} user_name - The name of the system admin.
- * @property {string} user_email_id - The email ID of the system admin.
- * @property {string} user_contact_number - The contact number of the system admin.
- * @property {string} user_location - The location of the system admin.
- * @property {string} user_pin_code - The pin code of the system admin.
- * @property {null|Object} doctor - The doctor details associated with the system admin (nullable).
- */
-/**
- * System admin details object.
- * @type {SystemAdminDetails}
- */
-const systemAdminDetails = {
-  user_name: 'siva',
-  user_email_id: 'siva@gmail.com',
-  user_contact_number: '8229467801',
-  user_location: 'london',
-  user_pin_code: '349824',
-  doctor: null
-}
-
-/**
- * This particular provided data represents doctor details.
- * 
- * @typedef {Object} DoctorDetails
- * @property {string} user_name - The name of the doctor.
- * @property {string} user_email_id - The email ID of the doctor.
- * @property {string} user_contact_number - The contact number of the doctor.
- * @property {string} user_location - The location of the doctor.
- * @property {string} user_pin_code - The pin code of the doctor.
- */
-/**
- * Doctor details object.
- * @type {DoctorDetails}
- */
-const doctorDetails = {
-  user_name: 'joe',
-  user_email_id: 'joe@gmail.com',
-  user_contact_number: '8267894780',
-  user_location: 'london',
-  user_pin_code: '349824'
-}
-
-/**
- * This particular provided data represents a specific details about doctor.
- * 
- * @typedef {Object} OtherDetailsOfDoctor
- * @property {string} mbbs_completed_year - The year the doctor completed MBBS.
- * @property {string} doctor_department - The department of the doctor.
- * @property {string} time_from - The start time of the doctor's availability.
- * @property {string} time_to - The end time of the doctor's availability.
- * @property {boolean} is_approved - Indicates whether the doctor is approved or not.
- */
-/**
- * Other details of a doctor object.
- * @type {OtherDetailsOfDoctor}
- */
-const otherDetailsOfDoctor = {
-  mbbs_completed_year: '1282',
-  doctor_department: "ultra sound scanning",
-  time_from: '9:00',
-  time_to: '6:00',
-  is_approved: true
-}
-
-/**
- * This particular provided data represents appointment details, for a specific patient, appointment can be created by admin, 
- * system admin and doctor.
- * 
- * @typedef {Object} NewAppointment
- * @property {string} billing_id - The billing ID of the appointment.
- * @property {string} usg_ref_id - The USG reference ID of the appointment.
- * @property {string} date - The date of the appointment.
- * @property {string} time - The time of the appointment.
- * @property {string} scan_type - The type of scan for the appointment.
- * @property {string} differential_diagnosis - The description of the differential diagnosis.
- * @property {string} appointment_status - The status of the appointment.
- * @property {string} appointment_type - The type of appointment.
- * @property {boolean} is_report_sent - Indicates if the report has been sent for the appointment.
- * @property {Object} call_url - The URLs for the meeting and moderator.
- * @property {string} call_url.meetingUrl - The URL for the meeting.
- * @property {string} call_url.moderatorUrl - The URL for the moderator.
- */
-/**
- * New appointment object.
- * @type {NewAppointment}
- */
-const newAppointment = {
-  billing_id: "BILLING-001",
-  usg_ref_id: "USG-REF-001",
-  date: '2024-01-01',
-  time: '2024-04-08T12:00:00',
-  scan_type: 'abdomen',
-  differential_diagnosis: 'some text',
-  appointment_status: 'upcoming',
-  appointment_type: 'regular',
-  is_report_sent: true,
-  call_url: {
-    meetingUrl: 'www.meeting/url',
-    moderatorUrl: 'www.moderator/url'
-  }
-}
-
-/**
- * This particular provided data represents a branch details for a each hospital.
- * 
- * @typedef {Object} HealthCenterDetails
- * @property {string} branch_name - The name of the health center branch.
- * @property {string} branch_contact_number - The contact number of the health center branch.
- * @property {string} branch_location - The location of the health center branch.
- * @property {string} branch_pin_code - The pin code of the health center branch.
- */
-/**
- * Health center branch details object.
- * @type {HealthCenterDetails}
- */
-const healthCenterDetails = {
-  branch_name: 'Adaiyar branch',
-  branch_contact_number: '123974823',
-  branch_location: 'Chennai',
-  branch_pin_code: '342342'
-}
-
-/**
- * This particular provided data represents a patient details.
- * 
- * @typedef {Object} NewPatientDetails
- * @property {string} patient_mobile_number - The mobile number of the patient.
- * @property {string} patient_name - The name of the patient.
- * @property {string} patient_email_id - The email id of the patient.
- * @property {string} patient_gender - The gender of the patient.
- * @property {string} patient_age - The age of the patient.
- * @property {string} patient_pin_code - The pin code of the patient.
- * @property {string} electronic_id - The electronic id of the patient.
- * @property {boolean} action_required - Indicates if action is required for the patient.
- */
-/**
- * New patient details object.
- * @type {NewPatientDetails}
- */
-const newPatient = {
-  patient_mobile_number: '432534253',
-  patient_name: 'mercy',
-  patient_email_id: 'mercy@gmail.com',
-  patient_gender: 'male',
-  patient_age: '23',
-  patient_pin_code: '233123',
-  electronic_id: '3424',
-  action_required: true
-}
-
-export default {
-  clientDetails, superAdminDetails,
-  adminDetails, systemAdminDetails,
-  doctorDetails, otherDetailsOfDoctor,
-  healthCenterDetails, newPatient,
-  newAppointment
-}
+export const clients = [psgClient]

@@ -3,6 +3,7 @@ import { getDate } from "../../utils/date.time.js"
 /**
  * Logs the API request and response information along with the elapsed time.
  *
+ * @function apiLogger
  * @param {Object} request - The request object.
  * @param {Object} response - The response object.
  * @param {Function} next - The next middleware function.

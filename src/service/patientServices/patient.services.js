@@ -8,6 +8,7 @@ import { returnStatement } from "../../utils/return.handler.js"
  * gender, age, pin code, electronic ID (optional), and OP ID (optional). It returns a Promise that resolves to an object 
  * containing the status and message of the operation. If an error occurs during the operation, it throws an error message.
  *
+ * @function createNewPatientsApi
  * @param {Object} data - The data for creating the new patient.
  * @param {string} data.body.user_id - The ID of the user creating the patient.
  * @param {string} data.body.role_name - The role of the user creating the patient.
@@ -48,7 +49,7 @@ const createNewPatientsApi = async (data) => {
             if (data.body.patient_email_id) patientDetails.patient_email_id = data.body.patient_email_id
 
             if (data.body.op_id) {
-                
+
                 const patientDetail = await collections.PatientModel.findOne({ op_id: data.body.op_id, client_id: userDetails.client_id })
                 if (patientDetail) {
                     throw returnStatement(false, "OP-ID is duplicate")
@@ -83,6 +84,7 @@ const createNewPatientsApi = async (data) => {
  * an object with status and message properties is thrown. If an internal server error occurs, a string with 
  * the error message is thrown.
  *
+ * @function listOfPatientsApi
  * @param {Object} data - An object containing the user ID, role name, and other optional parameters.
  * @param {string} data.body.user_id - The ID of the user.
  * @param {string} data.body.role_name - The role of the user.
@@ -126,6 +128,7 @@ const listOfPatientsApi = async (data) => {
  * If the user details are not found or the user does not have permission to edit the patient details, an object with 
  * status and message properties is thrown. If an internal server error occurs, a string with the error message is thrown.
  *
+ * @function editPatientDetailsApi
  * @param {Object} data - The data object containing the user ID, role name, and patient ID.
  * @param {string} data.body.user_id - The ID of the user.
  * @param {string} data.body.role_name - The role of the user.
@@ -136,8 +139,6 @@ const listOfPatientsApi = async (data) => {
  * @throws {Object} - If the user details are not found or the user does not have permission to edit the patient details, an object with status and message properties is thrown.
  * @throws {string} - If an internal server error occurs, a string with the error message is thrown.
  */
-
-
 const editPatientDetailsApi = async (data) => {
     try {
         const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
@@ -188,8 +189,10 @@ const editPatientDetailsApi = async (data) => {
     }
 }
 
+
 const previousHistoryApi = async (data) => { }
 
 export default {
-    createNewPatientsApi, listOfPatientsApi, previousHistoryApi, editPatientDetailsApi
+    createNewPatientsApi, listOfPatientsApi,
+    previousHistoryApi, editPatientDetailsApi
 }

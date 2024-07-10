@@ -10,8 +10,9 @@ import { returnStatement } from "../../utils/return.handler.js"
  * object with a status indicating success and a corresponding message.If any error occurs during the process, 
  * it throws an Error.
  *
+ * @function createNewAdminApi
  * @param {Object} data - The data object containing the user details.
- * 
+ *
  * @param {string} data.body.user_id - The ID of the user creating the admin.
  * @param {string} data.body.user_name - The name of the admin user.
  * @param {string} data.body.user_email_id - The email ID of the admin user.
@@ -21,6 +22,7 @@ import { returnStatement } from "../../utils/return.handler.js"
  * 
  * @param {string} data.body.role_name - The role name of the admin user.
  * @param {string} data.body.image_url - The URL of the admin user's image.
+ * 
  * @return {Promise<Object>} A promise that resolves to an object with a status and a message.
  * @throws {Error} If there is an error in the process.
  */
@@ -116,6 +118,7 @@ const createNewAdminApi = async (data) => {
  * resolves to an object with a status and a message. If the user ID is not found, the user does not have the required role, 
  * or an error occurs while creating the new health center, throws an Error with an appropriate error message.
  *
+ * @function createNewHealthCenterApi
  * @param {Object} data - The data object containing the user ID, role name, and details of the new health center.
  * @param {string} data.body.user_id - The ID of the user making the request.
  * @param {string} data.body.role_name - The role name of the user making the request.
@@ -172,6 +175,7 @@ const createNewHealthCenterApi = async (data) => {
  * indicating the success of the operation.If any error occurs during the process, it throws an Error with an appropriate
  * message detailing the nature of the error..
  *
+ * @function createNewRobotApi
  * @param {Object} data - The data object containing the user ID, branch ID, robot registration ID, and role name.
  * @param {string} data.body.user_id - The ID of the user making the request.
  * @param {string} data.body.branch_id - The ID of the branch associated with the robot.
@@ -225,6 +229,18 @@ const createNewRobotApi = async (data) => {
     }
 }
 
+/**
+ * Super admin adds a new scan type for a hospital client by a super admin user. If the scan type already exists, 
+ * it returns an error message. Otherwise, it creates a new scan type and returns a success message. If any error occurs 
+ * during the process, it throws an Error with an appropriate message.
+ * 
+ * @async
+ * @function addNewScanApi
+ * @param {object} data - Request data object containing user_id, role_name, scan_type, etc.
+ * @returns {Promise<object>} Promise object representing the result of the API call.
+ * @throws {string} Throws an error message if user_id is not found, role isn't superAdmin,
+ *   scan type with the same name already exists, or internal server error occurs.
+ */
 const addNewScanApi = async (data) => {
 
     try {
@@ -240,7 +256,7 @@ const addNewScanApi = async (data) => {
 
             await collections.HospitalClientModel.findOneAndUpdate(
                 { client_id: superAdminDetails.client_id },
-                { $push: { scan_type: { id: `${Date.now()}`, scan_type: data.body.scan_type, is_archive: false } } },
+                { $push: { scan_type: { id: Date.now(), scan_type: data.body.scan_type, is_archive: false } } },
                 { new: true }
             )
             return returnStatement(true, "scan type is added")
@@ -257,6 +273,18 @@ const addNewScanApi = async (data) => {
     }
 }
 
+/**
+ * Super admin deletes an existing scan type for a hospital client by a super admin user. if the scan type is not found, 
+ * throws an error message. Otherwise, it deletes the scan type and returns a success message. If any error occurs 
+ * during the process, it throws an Error with an appropriate message.
+ * 
+ * @async
+ * @function deleteScanApi
+ * @param {object} data - Request data object containing user_id, role_name, scan_type_id, etc.
+ * @returns {Promise<object>} Promise object representing the result of the API call.
+ * @throws {string} Throws an error message if user_id is not found, role isn't superAdmin,
+ *   scan type with the given ID is not found, or internal server error occurs.
+ */
 const deleteScanApi = async (data) => {
 
     try {
@@ -278,7 +306,7 @@ const deleteScanApi = async (data) => {
 
                     await collections.HospitalClientModel.findOneAndUpdate(
                         { client_id: superAdminDetails.client_id },
-                        { $push: { scan_type: {id: scan.id, scan_type: scan.scan_type, is_archive: true} } },
+                        { $push: { scan_type: { id: scan.id, scan_type: scan.scan_type, is_archive: true } } },
                         { new: true }
                     )
                     return true
@@ -303,6 +331,17 @@ const deleteScanApi = async (data) => {
     }
 }
 
+/**
+ * This function adds a new department for a hospital client by a super admin user. If the department already exists,
+ * if the error occurs during the process, it throws an Error with an appropriate message.
+ * 
+ * @async
+ * @function addNewDepartmentApi
+ * @param {object} data - Request data object containing user_id, role_name, department, etc.
+ * @returns {Promise<object>} Promise object representing the result of the API call.
+ * @throws {string} Throws an error message if user_id is not found, role isn't superAdmin,
+ *   department with the same name already exists, or internal server error occurs.
+ */
 const addNewDepartmentApi = async (data) => {
     try {
         const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
@@ -317,7 +356,7 @@ const addNewDepartmentApi = async (data) => {
 
             await collections.HospitalClientModel.findOneAndUpdate(
                 { client_id: superAdminDetails.client_id },
-                { $push: { department: { id: `${Date.now()}`, department: data.body.department, is_archive: false } } },
+                { $push: { department: { id: Date.now(), department: data.body.department, is_archive: false } } },
                 { new: true }
             )
             return returnStatement(true, "department is added")
@@ -333,6 +372,18 @@ const addNewDepartmentApi = async (data) => {
         else { throw error._message ? error._message : "internal server error" }
     }
 }
+
+/**
+ * Deletes an existing department for a hospital client by a super admin user. If the error occurs during the process, 
+ * it throws an Error with an appropriate message.
+ * 
+ * @async
+ * @function deleteDepartmentApi
+ * @param {object} data - Request data object containing user_id, role_name, department_id, etc.
+ * @returns {Promise<object>} Promise object representing the result of the API call.
+ * @throws {string} Throws an error message if user_id is not found, role isn't superAdmin,
+ *   department with the given ID is not found, or internal server error occurs.
+ */
 const deleteDepartmentApi = async (data) => {
     try {
         const superAdminDetails = await collections.UserModel.findOne({ user_id: data.body.user_id, is_archive: false }, { _id: 0, client_id: 1 })
@@ -346,13 +397,13 @@ const deleteDepartmentApi = async (data) => {
                 if (department.id == data.body.department_id && department.is_archive == false) {
                     await collections.HospitalClientModel.findOneAndUpdate(
                         { client_id: superAdminDetails.client_id },
-                        { $pull: { department : { id: department.id } } },
+                        { $pull: { department: { id: department.id } } },
                         { new: true }
                     )
 
                     await collections.HospitalClientModel.findOneAndUpdate(
                         { client_id: superAdminDetails.client_id },
-                        { $push: { department: {id: department.id, department: department.department, is_archive: true} } },
+                        { $push: { department: { id: department.id, department: department.department, is_archive: true } } },
                         { new: true }
                     )
                     return true
@@ -377,6 +428,7 @@ const deleteDepartmentApi = async (data) => {
 }
 
 export default {
-    createNewAdminApi, createNewHealthCenterApi, createNewRobotApi,
-    addNewScanApi, deleteScanApi, addNewDepartmentApi, deleteDepartmentApi
+    createNewAdminApi, createNewHealthCenterApi,
+    createNewRobotApi, addNewScanApi, deleteScanApi,
+    addNewDepartmentApi, deleteDepartmentApi
 }

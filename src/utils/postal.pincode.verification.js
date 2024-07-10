@@ -1,9 +1,9 @@
 /**
- * Validates an Indian postal code using the postalpincode.in API.
- * Thank you to the postalpincode.in team for providing this free service.
- *
+ * Validates an Indian postal code using the postal pincode in API.
+ * 
  * @param {string} postalCode - The postal code to validate.
- * @returns {Promise<boolean|string>} - Returns a promise that resolves to true if the postal code is valid, false if invalid, or an error message if the postal code is empty or undefined.
+ * @returns {Promise<boolean|string>} - Returns a promise that resolves to true if the postal code is valid, false if invalid, 
+ * or an error message if the postal code is empty or undefined.
  */
 export const isValidPostalCode = async (postalCode) => {
     if (!postalCode) {

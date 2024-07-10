@@ -1,7 +1,7 @@
 import { collections } from "../../mongoose/index.mongoose.js"
 import { verifyPassword, generateJwtToken, passwordEncryption } from "../../router/authenticationRouters/authentication.helper.js"
 import { returnStatement } from "../../utils/return.handler.js"
-import { addNewSubscriber, sendEmail } from "../microServices/emailNotification.js"
+import { addNewSubscriber, sendEmail } from "../microServices/email.notification.js"
 
 /**
  * Checks if a user with the given email ID exists in the database. 
@@ -15,6 +15,7 @@ import { addNewSubscriber, sendEmail } from "../microServices/emailNotification.
  * This authentication module is common for user like super admin ,admin, doctor, system admin. And this function is common to
  * check the whether user is existing or not
  *
+ * @function isExistingUserApi
  * @param {Object} data - The data object containing the user's email ID.
  * @param {string} data.body.user_email_id - The email ID of the user to check.
  * @return {Promise<Object>} A promise that resolves to an object indicating if the user exists and if they are new or not.
@@ -71,6 +72,7 @@ const isExistingUserApi = async (data) => {
  * This authentication module is common for user like super admin ,admin, doctor, system admin. And this function is common to
  * check the whether user's password on their email ID
  *
+ * @function setPasswordApi
  * @param {Object} data - The data object containing the user's email ID and new password.
  * @param {string} data.body.user_email_id - The email ID of the user.
  * @param {string} data.body.password - The new password for the user.
@@ -95,11 +97,30 @@ const setPasswordApi = async (data) => {
 
     if (!userDetails) throw returnStatement(false, "email id not found")
 
+    const loginDetails = await collections.UserLoginModel.findOne({ _id: userDetails.user_login._id })
+
+    let oldPassword = []
+
+    if(loginDetails.update_count > 0)
+    {
+
+      oldPassword = loginDetails['password'].old_password
+
+      const promises = oldPassword.map(async (password) => { return verifyPassword(data.body.password, password) })
+
+      const isExistingPassword = await Promise.all(promises).then(results => { return results.includes(true) })
+
+      if(isExistingPassword) { throw returnStatement(false, "old password cannot be new password")} 
+
+    }
+
+    oldPassword.push(passwordEncryption(data.body.password))
+
     await collections.UserLoginModel.findOneAndUpdate(
       { _id: userDetails.user_login._id },
       {
         $set: {
-          password: passwordEncryption(data.body.password),
+          password: { current_password: passwordEncryption(data.body.password), old_password: oldPassword },
           update_count: ((userDetails.user_login.update_count) + 1)
         }
       },//password encryption gives hash string
@@ -126,8 +147,9 @@ const setPasswordApi = async (data) => {
  * user role". If any other error occurs during the authentication process, it throws an error message "internal server error".
  * 
  * Additional Notes:
- * This authentication module is common for user like super admin ,admin, doctor, system admin. And this function is common to
- * check the whether user's login credentials like email Id, password and user's role
+ * This authentication module is common for user like super admin ,admin, doctor, system admin.
+ * And this function is common to check the whether user's login credentials like email Id, 
+ * password and user's role
  * 
  * @param {Object} data - The data object containing user credentials for login.
  * @param {string} data.body.user_email_id - The email ID of the user.
@@ -136,7 +158,8 @@ const setPasswordApi = async (data) => {
  * @return {Promise<Object>} A promise that resolves to an object indicating the success or failure of the login attempt.
  * 
  * @throws {Object} If the email ID is not found, an error object with status false and message "email id not found" is thrown.
- * @throws {Object} If the password is invalid or the user role is invalid, an error object with status false and message "invalid password" or "invalid user role" is thrown.
+ * @throws {Object} If the password is invalid or the user role is invalid, an error object with status false and message 
+ * "invalid password" or "invalid user role" is thrown.
  * @throws {string} If any other error occurs, an error message "internal server error" is thrown.
  */
 const userLoginApi = async (data) => {
@@ -163,7 +186,7 @@ const userLoginApi = async (data) => {
     if (loginDetails.update_count == 0) {
       throw returnStatement(false, "set password")
     }
-    const verifyUserPassword = verifyPassword(data.body.password, loginDetails.password)
+    const verifyUserPassword = verifyPassword(data.body.password, loginDetails['password'].current_password)
 
     if (verifyUserPassword && userDetails.user_roles.role_id == data.body.role_id) {
 
@@ -191,6 +214,29 @@ const userLoginApi = async (data) => {
 }
 
 
+/**
+ * Sends an OTP (One-Time Password) to a user's email for authentication.
+ *
+ * This function performs the following steps:
+ * 1. Checks if the provided email exists in the database.
+ * 2. Ensures the user associated with the email has not been archived.
+ * 3. Generates or retrieves an OTP for the email and updates the OTP collection.
+ * 4. Sends the OTP to the user's email.
+ *
+ * Additional Notes:
+ * This authentication module is common for user like super admin ,admin, doctor, system admin.
+ * And this function is common to send the OTP for login whether ths user forget the password.
+ * 
+ * @async
+ * @function sendOtpApi
+ * @param {Object} data - The request data.
+ * @param {Object} data.body - The body of the request.
+ * @param {string} data.body.user_email_id - The email ID of the user to send the OTP to.
+ * 
+ * @returns {Promise<Object>} A promise that resolves to a success message or rejects with an error message.
+ * @throws Will throw an error if the email ID is not found, the user has not set a password, 
+ * or if there is an internal server error.
+ */
 const sendOtpApi = async (data) => {
 
   try {
@@ -250,7 +296,22 @@ const sendOtpApi = async (data) => {
   }
 }
 
-
+/**
+ * Verifies the OTP (One-Time Password) for a given email ID.
+ *
+ * Additional Notes:
+ * This authentication module is common for user like super admin ,admin, doctor, system admin.
+ * And this function is common to check the whether the OTP entered by the user is valid or not.
+ * 
+ * @function verifyOtpApi
+ * @param {Object} data - The request data object.
+ * @param {Object} data.body - The body of the request data.
+ * @param {string} data.body.user_email_id - The email ID of the user.
+ * @param {string} data.body.otp - The OTP entered by the user.
+ * 
+ * @returns {Promise<Object>} A promise that resolves to an object containing the verification result.
+ * @throws {string} Will throw an error message if the verification fails.
+ */
 const verifyOtpApi = async (data) => {
 
   try {

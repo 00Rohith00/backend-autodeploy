@@ -7,4 +7,6 @@ const officeRouterCommonMiddlewares = [apiLogger]
 const createNewClientApi = [...officeRouterCommonMiddlewares, validation.createNewClientApi]
 const createNewSuperAdminApi = [...officeRouterCommonMiddlewares, validation.createNewUserApi]
 
-export default { createNewClientApi, createNewSuperAdminApi }
+export default {
+  createNewClientApi, createNewSuperAdminApi
+}

@@ -52,7 +52,7 @@ const listOfDoctorsApi = async (data) => {
 
                     clientDetails['department'].forEach((department) => {
                         if (department.id == user.user_details.doctor.department_id) departmentName = department.department
-                })
+                    })
 
                     listOfDoctors.push({
                         doctor_id: user.user_id,
@@ -75,7 +75,25 @@ const listOfDoctorsApi = async (data) => {
         else { throw error._message ? error._message : "internal server error" }
     }
 }
-
+/**
+ * Admin retrieves detailed information about a doctor based on certain user roles and conditions.
+ * This function takes in a data object containing user information such as user ID, doctor ID, and role name.
+ * It then retrieves the doctor details, including user and doctor-specific information.
+ * The function returns a Promise that resolves to an object containing the doctor details.
+ * If the user details or doctor details are not found, or the user does not have the required role, it throws an Error.
+ *
+ * @param {Object} data - The input data for the API.
+ * @param {Object} data.body - The body of the input data.
+ * @param {string} data.body.user_id - The ID of the user making the request.
+ * @param {string} data.body.doctor_id - The ID of the doctor whose details are being requested.
+ * @param {string} data.body.role_name - The role of the user making the request (e.g., admin, systemAdmin).
+ * 
+ * @throws Will throw an error if user details or doctor details are not found, or if the user does not have the correct role to 
+ * view doctor details.
+ * @throws Will throw an error if there is an internal server error.
+ *
+ * @returns {Promise<Object>} - Returns a promise that resolves to an object containing doctor details if successful.
+ **/
 const doctorDetailsApi = async (data) => {
 
     try {
@@ -131,6 +149,20 @@ const doctorDetailsApi = async (data) => {
     }
 }
 
+/**
+ * Admin retrieves a list of hospital departments based on user roles and conditions.
+ * This function takes in a data object containing user information such as user ID and role name.
+ * It then retrieves the list of departments from the hospital client associated with the user.
+ * The function returns a Promise that resolves to an object containing the list of departments.
+ * If the user details are not found or the user does not have the required role, it throws an Error.
+ *
+ * @param {Object} data - The data object containing user information.
+ * @param {Object} data.body - The body of the input data.
+ * @param {string} data.body.user_id - The ID of the user making the request.
+ * @param {string} data.body.role_name - The role name of the user making the request (e.g., admin, systemAdmin).
+ * @return {Promise<Object>} A promise that resolves to an object containing the list of hospital departments.
+ * @throws {Error} If the user details are not found or the user does not have the required role.
+ **/
 const listOfDepartmentsApi = async (data) => {
     try {
 
@@ -161,6 +193,36 @@ const listOfDepartmentsApi = async (data) => {
     }
 }
 
+/** 
+ * Admin edits the details of a doctor based on specific conditions. This function takes in a data object containing 
+ * user and doctor information, including IDs, role name, and updated details. It then updates the doctor's details 
+ * if the conditions are met. The function returns a Promise that resolves to a success message if the update is successful.
+ * If the user or doctor details are not found, or the user does not have the required role, it throws an Error.
+ *
+ * @param {Object} data - The data object containing user and doctor information.
+ * @param {Object} data.body - The body of the input data.
+ * 
+ * @param {string} data.body.user_id - The ID of the user making the request.
+ * @param {string} data.body.user_name - The updated name of the doctor.
+ * @param {number} data.body.user_age - The updated age of the doctor.
+ * @param {string} data.body.user_gender - The updated gender of the doctor.
+ * @param {string} data.body.user_email_id - The updated email ID of the doctor.
+ * @param {string} data.body.user_location - The updated location of the doctor.
+ * @param {string} data.body.user_pin_code - The updated pin code of the doctor.
+ * @param {string} data.body.user_contact_number - The updated contact number of the doctor.
+ * 
+ * @param {string} data.body.doctor_id - The ID of the doctor whose details are being edited.
+ * @param {string} data.body.image_url - The updated image URL of the doctor.
+ * @param {string} data.body.doctor_registration_id - The updated registration ID of the doctor.
+ * @param {number} data.body.mbbs_completed_year - The updated year of MBBS completion of the doctor.
+ * @param {string} data.body.department_id - The updated department ID of the doctor.
+ * @param {string} [data.body.time_from] - The updated start time of the doctor's availability.
+ * @param {string} [data.body.time_to] - The updated end time of the doctor's availability.
+ * @param {string} data.body.role_name - The role name of the user making the request (e.g., admin).
+ * 
+ * @return {Promise<Object>} A promise that resolves to a success message if the update is successful.
+ * @throws {Error} If the user or doctor details are not found, or the user does not have the required role.
+ **/
 const editDoctorDetailsApi = async (data) => {
 
     try {
@@ -251,4 +313,9 @@ const editDoctorDetailsApi = async (data) => {
 
 }
 
-export default { listOfDoctorsApi, doctorDetailsApi, editDoctorDetailsApi, listOfDepartmentsApi }
+
+
+export default {
+    listOfDoctorsApi, doctorDetailsApi,
+    editDoctorDetailsApi, listOfDepartmentsApi
+}

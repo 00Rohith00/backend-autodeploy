@@ -209,6 +209,13 @@ const listOfHospitalAppointmentsApi = async (request, response) => {
     }
 }
 
+/**
+ * Admin and System admin reschedules an appointment through the API and sends the result as a response.
+ *
+ * @param {Object} request - The request object containing the data for rescheduling an appointment.
+ * @param {Object} response - The response object used to send the result of the API call.
+ * @return {Promise<void>} - A promise that resolves when the API call is complete.
+ */
 const rescheduleAppointmentApi = async (request, response) => {
     try {
         const result = await services.rescheduleAppointmentApi(request)
@@ -224,8 +231,10 @@ const rescheduleAppointmentApi = async (request, response) => {
 
 
 export default {
-    searchPatientInformationApi, listOfScanTypesApi, listOfHospitalDoctorsApi, 
-    listOfHealthCenterApi, listOfHospitalRobotsApi, createNewAppointmentApi,
-    appointmentDetailsApi, cancelAppointmentApi, editAppointmentApi, listOfHospitalAppointmentsApi,
+    searchPatientInformationApi, listOfScanTypesApi,
+    listOfHospitalDoctorsApi, listOfHealthCenterApi,
+    listOfHospitalRobotsApi, createNewAppointmentApi,
+    appointmentDetailsApi, cancelAppointmentApi,
+    editAppointmentApi, listOfHospitalAppointmentsApi,
     rescheduleAppointmentApi
 }

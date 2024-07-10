@@ -2,11 +2,23 @@ import { role } from "../../config/config.js"
 import { collections } from "../../mongoose/index.mongoose.js"
 import { returnStatement } from "../../utils/return.handler.js"
 
+/**
+ * Admin and system admin retrieves a list of robots associated with health centers based on user's role and user_id.
+ * If successful, it returns a Promise that resolves to an object containing the list of robots. 
+ * If any error occurs during the process, it throws an Error with details of the specific error encountered.
+ * 
+ * @async
+ * @function listOfRobotsApi
+ * @param {object} data - Request data object containing user_id, role_name, etc.
+ * @returns {Promise<object>} Promise object representing the result of the API call.
+ * @throws {string} Throws an error message if user_id is not found, role doesn't have permission,
+ *   or internal server error occurs.
+ */
 const listOfRobotsApi = async (data) => {
 
     try {
 
-        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id }, { _id: 0, client_id: 1 })
+        const userDetails = await collections.UserModel.findOne({ user_id: data.body.user_id && is_archive == false }, { _id: 0, client_id: 1 })
 
         if (userDetails && data.body.role_name == role.admin || data.body.role_name == role.systemAdmin) {
 
@@ -18,7 +30,7 @@ const listOfRobotsApi = async (data) => {
 
             const promises = branchDetails.map(async (branch) => {
 
-                const robotDetails = await collections.RobotModel.find({ branch_id: branch.branch_id }, { robot_id: 1, robot_registration_id: 1, under_maintenance: 1, _id:0 })
+                const robotDetails = await collections.RobotModel.find({ branch_id: branch.branch_id }, { robot_id: 1, robot_registration_id: 1, under_maintenance: 1, _id: 0 })
 
                 if (robotDetails.length != 0) {
 
@@ -27,7 +39,7 @@ const listOfRobotsApi = async (data) => {
             })
 
             await Promise.all(promises)
-            
+
             return returnStatement(true, "list of robots", listOfRobots)
         }
         else {
@@ -58,4 +70,6 @@ const robotMaintenanceStatusApi = async (data) => {
 
 
 
-export default { listOfRobotsApi, robotMaintenanceStatusApi }
+export default {
+    listOfRobotsApi, robotMaintenanceStatusApi
+}

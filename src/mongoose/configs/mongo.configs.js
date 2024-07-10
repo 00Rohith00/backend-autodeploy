@@ -4,6 +4,7 @@ import { mongooseConfig } from '../../config/config.js'
 /**
  * Asynchronously connects to the Mongoose database based on the provided usage flag.
  *
+ * @function connectToMongoose
  * @param {boolean} usage - A flag indicating whether to connect to the database.
  * @return {Promise} A promise that resolves once the connection process is completed.
  */

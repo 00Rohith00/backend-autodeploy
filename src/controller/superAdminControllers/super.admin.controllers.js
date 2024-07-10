@@ -21,8 +21,9 @@ const createNewAdminApi = async (request, response) => {
     }
 }
 
+
 /**
- * Admin creates a new health center through the API and sends the result as a response.
+ * Super admin creates a new health center through the API and sends the result as a response.
  *
  * @param {Object} request - The request object containing the data for creating a new health center.
  * @param {Object} response - The response object used to send the result of the API call.
@@ -41,8 +42,9 @@ const createNewHealthCenterApi = async (request, response) => {
     }
 }
 
+
 /**
- * Admin creates a new health center through the API and sends the result as a response.
+ * Super admin creates a new robot for health center through the API and sends the result as a response.
  *
  * @param {Object} request - The request object containing the data for creating a new health center.
  * @param {Object} response - The response object used to send the result of the API call.
@@ -61,6 +63,14 @@ const createNewRobotApi = async (request, response) => {
     }
 }
 
+
+/**
+ * Super admin handles the addition of a new scan through the API request and sends the result as a response
+ * 
+ * @param {Object} request - The request object containing the data for adding a new scan.
+ * @param {Object} response - The response object used to send the result of the API call.
+ * @return {Promise<void>} - A Promise that resolves when the API call is complete.
+ */
 const addNewScanApi = async (request, response) => {
     try {
         const result = await services.addNewScanApi(request)
@@ -74,6 +84,14 @@ const addNewScanApi = async (request, response) => {
     }
 }
 
+
+/**
+ * Super admin deletes a scan through the API request and sends the result as a response.
+ *
+ * @param {Object} request - The request object containing the data for deleting a scan.
+ * @param {Object} response - The response object used to send the result of the API call.
+ * @return {Promise<void>} - A Promise that resolves when the API call is complete.
+ */
 const deleteScanApi = async (request, response) => {
     try {
         const result = await services.deleteScanApi(request)
@@ -87,6 +105,14 @@ const deleteScanApi = async (request, response) => {
     }
 }
 
+
+/**
+ * Super admin adds a new department through the API request and sends the result as a response.
+ *
+ * @param {Object} request - The request object containing the data for adding a new department.
+ * @param {Object} response - The response object used to send the result of the API call.
+ * @return {Promise<void>} - A Promise that resolves when the API call is complete.
+ */
 const addNewDepartmentApi = async (request, response) => {
     try {
         const result = await services.addNewDepartmentApi(request)
@@ -100,6 +126,14 @@ const addNewDepartmentApi = async (request, response) => {
     }
 }
 
+
+/**
+ * Super admin deletes a department through the API request and sends the result as a response.
+ *
+ * @param {Object} request - The request object containing the data for deleting a department.
+ * @param {Object} response - The response object used to send the result of the API call.
+ * @return {Promise<void>} - A Promise that resolves when the API call is complete.
+ */
 const deleteDepartmentApi = async (request, response) => {
     try {
         const result = await services.deleteDepartmentApi(request)
@@ -115,6 +149,7 @@ const deleteDepartmentApi = async (request, response) => {
 
 
 export default {
-    createNewAdminApi, createNewHealthCenterApi, createNewRobotApi,
-    addNewScanApi, deleteScanApi, addNewDepartmentApi, deleteDepartmentApi
+    createNewAdminApi, createNewHealthCenterApi,
+    createNewRobotApi, addNewScanApi, deleteScanApi,
+    addNewDepartmentApi, deleteDepartmentApi
 }

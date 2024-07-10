@@ -1,6 +1,7 @@
 /**
  * Generates a JSON response with the given status code and body.
  *
+ * @function jsonResponse
  * @param {Object} response - The response object to send the JSON response.
  * @param {number} statusCode - The status code of the response.
  * @param {Object} body - The data to be sent in the response.
@@ -13,6 +14,7 @@ const jsonResponse = (response, statusCode, body) => {
 /**
  * Generates a successful response with the provided body or a default success message if no body is provided.
  *
+ * @function okResponse
  * @param {Object} response - The response object to send the response.
  * @param {Object} body - The data to be sent in the response or null.
  * @return {Object} The JSON response with a success status code and the provided body or default success message.
@@ -24,6 +26,7 @@ export const okResponse = (response, body) => {
 /**
  * Generates a response with a 201 status code for successful creation, using the provided body or a default message.
  *
+ * @function createdResponse
  * @param {Object} response - The response object to send the response.
  * @param {Object} body - The data to be sent in the response or null.
  * @return {Object} The JSON response with a 201 status code and the provided body or default success message.
@@ -35,6 +38,7 @@ export const createdResponse = (response, body) => {
 /**
  * Generates an unauthorized response with the provided body or a default un-authorized message if no body is provided.
  *
+ * @function unAuthorizedResponse
  * @param {Object} response - The response object to send the response.
  * @param {Object} body - The data to be sent in the response or null.
  * @return {Object} The JSON response with a 401 status code and the provided body or default un-authorized message.
@@ -46,6 +50,7 @@ export const unAuthorizedResponse = (response, body) => {
 /**
  * Generates a forbidden response with the provided body or a default forbidden message if no body is provided.
  *
+ * @function forbiddenResponse
  * @param {Object} response - The response object to send the response.
  * @param {Object} body - The data to be sent in the response or null.
  * @return {Object} The JSON response with a 403 status code and the provided body or default forbidden message.
@@ -57,6 +62,7 @@ export const forbiddenResponse = (response, body) => {
 /**
  * Generates a not found response with the provided body or a default message if no body is provided.
  *
+ * @function notFoundResponse
  * @param {Object} response - The response object to send the response.
  * @param {Object} body - The data to be sent in the response or null.
  * @return {Object} The JSON response with a 404 status code and the provided body or default not found message.
@@ -68,6 +74,7 @@ export const notFoundResponse = (response, body) => {
 /**
  * Generates a response with a 500 status code for server errors, using the provided body or a default error message if no body is provided.
  *
+ * @function failResponse
  * @param {Object} response - The response object to send the response.
  * @param {Object} body - The data to be sent in the response or null.
  * @return {Object} The JSON response with a 500 status code and the provided body or default error message.
@@ -79,6 +86,7 @@ export const failResponse = (response, body) => {
 /**
  * A function that generates a response with a 422 status code for Unprocessable Entity errors, using the provided body or a default message if no body is provided.
  *
+ * @function UnprocessableEntity
  * @param {Object} response - The response object to send the response.
  * @param {Object} body - The data to be sent in the response or null.
  * @return {Object} The JSON response with a 422 status code and the provided body or default Unprocessable Entity message.

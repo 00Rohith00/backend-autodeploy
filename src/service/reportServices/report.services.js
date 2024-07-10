@@ -1,10 +1,24 @@
-
-import { role } from "../../config/config.js"
 import { collections } from "../../mongoose/index.mongoose.js"
+import { role } from "../../config/config.js"
 import { returnStatement } from "../../utils/return.handler.js"
 
 
-
+/**
+ * Doctor handles the creation and updating of patient reports based on on the provided data .This function takes in a 
+ * data object containing the user_id, appointment_id, . If the provided data is not there in database, it throws an error 
+ * as report not found to
+ * 
+ * @async
+ * @function patientReportApi
+ * @param {Object} data - The data for the API call.
+ * @param {Object} data.body - The body of the data.
+ * @param {string} data.body.user_id - The ID of the user.
+ * @param {string} data.body.appointment_id - The ID of the appointment.
+ * @param {string} data.body.role_name - The role of the user.
+ * @param {string} data.body.report_details - The details of the report.
+ * @returns {Promise<Object>} - A promise that resolves to a return statement object indicating success or failure.
+ * @throws {Error} - Throws an error if the process fails.
+ */
 const patientReportApi = async (data) => {
 
     try {
@@ -36,16 +50,18 @@ const patientReportApi = async (data) => {
             }
             else if (data.route.path.includes('/edit-report')) {
 
+                if(appointment.is_report_sent) throw returnStatement(false, "cannot update the report because it already sent")
+
                 const editReport = await collections.ReportModel.findOneAndUpdate(
                     { appointment_id: data.body.appointment_id },
-                    { $set: { report_details: data.body.report_details } },
+                    { $set: { report_details: data.body.report_details }},
                     { new: true }
                 )
 
-                if(editReport) return returnStatement(true, "report is updated")
+                if (editReport) return returnStatement(true, "report is updated")
 
-                else throw returnStatement(false, "report not found for this appointment")
-                
+                else throw returnStatement(false, "report not found")
+
             }
         }
         else {
@@ -59,7 +75,16 @@ const patientReportApi = async (data) => {
     }
 }
 
-
+/**
+ * Doctor and system admin handles a list of reports for a given user based on their role and user_id.if the provided 
+ * data is not matched with the user_id, or if the role doesn't have permission, an error is thrown.
+ * 
+ * @async
+ * @function listOfReportsApi
+ * @param {object} data - Request data object containing user_id, role_name, etc.
+ * @returns {Promise<object>} Promise object representing the result of the API call.
+ * @throws {string} Throws an error message if user_id is not found, or if the role doesn't have permission.
+ */
 const listOfReportsApi = async (data) => {
 
     try {
@@ -120,6 +145,17 @@ const listOfReportsApi = async (data) => {
 }
 
 
+/**
+ * Doctor dds a new report template for a user based on their role and user_id. If the role doesn't have permission, 
+ * an error is thrown.
+ * 
+ * @async
+ * @function addReportTemplateApi
+ * @param {object} data - Request data object containing user_id, role_name, template_name, template, etc.
+ * @returns {Promise<object>} Promise object representing the result of the API call.
+ * @throws {string} Throws an error message if user_id is not found, role doesn't have permission,
+ *   template with the same name already exists, or internal server error occurs.
+ */
 const addReportTemplateApi = async (data) => {
 
     try {
@@ -136,7 +172,7 @@ const addReportTemplateApi = async (data) => {
 
             await collections.HospitalClientModel.findOneAndUpdate(
                 { client_id: userDetails.client_id },
-                { $push: { templates: { id: `${Date.now()}`, template_name: data.body.template_name, template: data.body.template, is_archive: false } } },
+                { $push: { templates: { id: Date.now(), template_name: data.body.template_name, template: data.body.template, is_archive: false } } },
                 { new: true }
             )
             return returnStatement(true, "template is added")
@@ -154,7 +190,17 @@ const addReportTemplateApi = async (data) => {
     }
 }
 
-
+/**
+ * Doctor deletes a report template for a user based on their role and provided template_id. If the template_id is not found,
+ *  or if the role doesn't have permission, an error is thrown.
+ * 
+ * @async
+ * @function deleteReportTemplateApi
+ * @param {object} data - Request data object containing user_id, role_name, template_id, etc.
+ * @returns {Promise<object>} Promise object representing the result of the API call.
+ * @throws {string} Throws an error message if user_id is not found, role doesn't have permission,
+ *   template_id is not found, or internal server error occurs.
+ */
 const deleteReportTemplateApi = async (data) => {
 
     try {
@@ -176,7 +222,7 @@ const deleteReportTemplateApi = async (data) => {
 
                     await collections.HospitalClientModel.findOneAndUpdate(
                         { client_id: userDetails.client_id },
-                        { $push: { templates: {id: template.id, template_name: template.template_name, template: template.template ,is_archive: true} } },
+                        { $push: { templates: { id: template.id, template_name: template.template_name, template: template.template, is_archive: true } } },
                         { new: true }
                     )
                     return true
@@ -202,7 +248,17 @@ const deleteReportTemplateApi = async (data) => {
     }
 }
 
-
+/**
+ * Doctor retrieves a list of report templates based on user's role and user_id. If the role doesn't have permission, 
+ * an error is thrown.
+ * 
+ * @async
+ * @function listOfReportTemplatesApi
+ * @param {object} data - Request data object containing user_id, role_name, etc.
+ * @returns {Promise<object>} Promise object representing the result of the API call.
+ * @throws {string} Throws an error message if user_id is not found, role doesn't have permission,
+ *   or internal server error occurs.
+ */
 const listOfReportTemplatesApi = async (data) => {
 
     try {
@@ -238,5 +294,7 @@ const listOfReportTemplatesApi = async (data) => {
 
 
 export default {
-    patientReportApi, listOfReportsApi, addReportTemplateApi, listOfReportTemplatesApi, deleteReportTemplateApi
+    patientReportApi, listOfReportsApi,
+    addReportTemplateApi, listOfReportTemplatesApi,
+    deleteReportTemplateApi
 }

@@ -1,4 +1,3 @@
-
 /**
  * Gets the current date.
  *
@@ -10,6 +9,11 @@ export const getDate = () => {
 }
 
 
+/**
+ * Converts a 12-hour formatted time string to a 24-hour formatted time string.
+ * @param {string} time12h - The input time string in 12-hour format (e.g., 'hh:mm AM/PM').
+ * @returns {string} The converted time string in 24-hour format (e.g., 'hh:mm').
+ */
 export const convertTimeTo24HourFormat = (time12h) => {
 
     const [time, period] = time12h.split(' ')
@@ -29,6 +33,14 @@ export const convertTimeTo24HourFormat = (time12h) => {
     return `${hours24Str}:${minutesStr}`
 }
 
+
+
+/**
+ * Validates if a given date and time are in the future compared to the current date and time.
+ * @param {string} date - The date string in ISO format (e.g., 'YYYY-MM-DD').
+ * @param {string} time - The time string in 12-hour format with AM/PM (e.g., 'hh:mm AM/PM').
+ * @returns {boolean} Returns true if the combined date and time are in the future, otherwise false.
+ */
 export const validateDateTime = (date, time) => {
 
     const now = new Date()
@@ -36,6 +48,15 @@ export const validateDateTime = (date, time) => {
     return inputDateTime > now
 }
 
+
+
+/**
+ * Checks if the given year, month, and day form a valid date.
+ * @param {number} year - The year (e.g., 2024).
+ * @param {number} month - The month (1 for January, 2 for February, ..., 12 for December).
+ * @param {number} day - The day of the month (1 to 31, depending on the month and year).
+ * @returns {boolean} Returns true if the year, month, and day together form a valid date; otherwise, false.
+ */
 export const isValidDate = (year, month, day) => {
 
     if (month < 1 || month > 12) {
@@ -46,21 +67,18 @@ export const isValidDate = (year, month, day) => {
         return false
     }
 
-    if ((month == 4 || month == 6 || month == 9 || month == 11))
-    {
-        return day != 31    
+    if ((month == 4 || month == 6 || month == 9 || month == 11)) {
+        return day != 31
     }
-    else if (month == 2)
-    {
+    else if (month == 2) {
         if ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) {
             return day <= 29
         } else {
             return day <= 28
         }
     }
-    else
-    {
-        return true    
+    else {
+        return true
     }
 }
 
