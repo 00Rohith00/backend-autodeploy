@@ -30,7 +30,7 @@ export const convertTimeTo24HourFormat = (time12h) => {
     const hours24Str = hours24.toString().padStart(2, '0')
     const minutesStr = minutes.toString().padStart(2, '0')
 
-    return `${hours24Str}:${minutesStr}`
+    return `${hours24Str}:${minutesStr}:00`
 }
 
 

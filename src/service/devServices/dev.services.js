@@ -277,11 +277,7 @@ const seedDataApi = async (data) => {
                     robot_id: seederDetails['branch'][0].robots[0],
                     scan_type_id: createNewClient['scan_type'][0].id,
                     action_required: false,
-                    call_url: {
-                        meetingUrl: "video call",
-                        moderatorUrl: "video call",
-                    }
-                    // call_url: await videoCallApi(conferenceInfo),        
+                    call_url: await videoCallApi(conferenceInfo)    
                 }
 
                 if (indexOfAppointment < 4) {
