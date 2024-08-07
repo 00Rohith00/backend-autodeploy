@@ -101,8 +101,7 @@ const setPasswordApi = async (data) => {
 
     let oldPassword = []
 
-    if(loginDetails.update_count > 0)
-    {
+    if (loginDetails.update_count > 0) {
 
       oldPassword = loginDetails['password'].old_password
 
@@ -110,7 +109,7 @@ const setPasswordApi = async (data) => {
 
       const isExistingPassword = await Promise.all(promises).then(results => { return results.includes(true) })
 
-      if(isExistingPassword) { throw returnStatement(false, "old password cannot be new password")} 
+      if (isExistingPassword) { throw returnStatement(false, "old password cannot be new password") }
 
     }
 
@@ -261,12 +260,20 @@ const sendOtpApi = async (data) => {
 
     if (!loginObjectId.user_login.update_count) { throw returnStatement(false, "this email id didn't set password yet") }
 
+    if (otpCollection) {
+
+      const timeDifference = Date.now() - otpCollection.expiry_date_time
+
+      if (timeDifference < 0) throw returnStatement(false, `you have to wait ${Math.abs(Math.round(timeDifference / 60000))} mins to send next otp`)
+    }
+
     const otp = 1234                           // write an method for generate a dynamic otp
 
     await addNewSubscriber(data.body.user_email_id)
 
-    if (!otpCollection) {
+    await sendEmail(data.body.user_email_id, "email notification testing", "atre health tech", "srohith10012002@gmail.com", `your otp is ${otp} only valid for next 10 minutes`)
 
+    if (!otpCollection) {
       await collections.OtpModel.create({
         user_email_id: data.body.user_email_id,
         otp: otp,
@@ -274,19 +281,12 @@ const sendOtpApi = async (data) => {
       })
     }
     else {
-      const timeDifference = Date.now() - otpCollection.expiry_date_time
-
-      if (timeDifference < 0) {
-        throw returnStatement(false, `you have to wait ${Math.abs(Math.round(timeDifference / 60000))} mins to send next otp`)
-      }
-
       await collections.OtpModel.findOneAndUpdate(
         { user_email_id: data.body.user_email_id },
         { $set: { otp: otp, expiry_date_time: Date.now() + 10 * 60000 } },
         { new: true }
       )
     }
-    await sendEmail(data.body.user_email_id, "email notification testing", "atre health tech", "srohith10012002@gmail.com", `your otp is ${otp} only valid for next 10 minutes`)
 
     return returnStatement(true, "OTP sent successfully")
   }
